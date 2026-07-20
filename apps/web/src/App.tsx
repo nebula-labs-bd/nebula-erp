@@ -1,10 +1,11 @@
+import MainLayout from "./layouts/MainLayout";
+import Dashboard from "./pages/Dashboard";
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-5xl font-bold">
-        Nebula ERP
-      </h1>
-    </div>
+    <MainLayout>
+      <Dashboard />
+    </MainLayout>
   );
 }
 
