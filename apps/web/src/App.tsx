@@ -1,19 +1,9 @@
-import "./App.css";
-
 function App() {
   return (
-    <div className="app">
-      <main className="container">
-        <h1>Nebula ERP</h1>
-
-        <p>
-          AI-native Enterprise Resource Planning Platform
-        </p>
-
-        <span>
-          Frontend foundation initialized.
-        </span>
-      </main>
+    <div className="flex min-h-screen items-center justify-center">
+      <h1 className="text-5xl font-bold">
+        Nebula ERP
+      </h1>
     </div>
   );
 }
