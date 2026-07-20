@@ -1,0 +1,52 @@
+:root {
+  /* Brand */
+  --nebula-primary: #2563eb;
+  --nebula-primary-hover: #1d4ed8;
+  --nebula-secondary: #7c3aed;
+
+  /* Background */
+  --nebula-background: #f8fafc;
+  --nebula-surface: #ffffff;
+  --nebula-surface-muted: #f1f5f9;
+
+  /* Text */
+  --nebula-text-primary: #0f172a;
+  --nebula-text-secondary: #475569;
+  --nebula-text-muted: #94a3b8;
+
+  /* Border */
+  --nebula-border: #e2e8f0;
+
+  /* Status */
+  --nebula-success: #16a34a;
+  --nebula-warning: #d97706;
+  --nebula-danger: #dc2626;
+  --nebula-info: #0284c7;
+
+  /* Radius */
+  --nebula-radius-sm: 6px;
+  --nebula-radius-md: 10px;
+  --nebula-radius-lg: 16px;
+  --nebula-radius-xl: 24px;
+
+  /* Shadows */
+  --nebula-shadow-sm:
+    0 1px 2px rgb(15 23 42 / 0.05);
+
+  --nebula-shadow-md:
+    0 4px 12px rgb(15 23 42 / 0.08);
+
+  --nebula-shadow-lg:
+    0 12px 32px rgb(15 23 42 / 0.12);
+
+  /* Spacing */
+  --nebula-space-1: 4px;
+  --nebula-space-2: 8px;
+  --nebula-space-3: 12px;
+  --nebula-space-4: 16px;
+  --nebula-space-5: 20px;
+  --nebula-space-6: 24px;
+  --nebula-space-8: 32px;
+  --nebula-space-10: 40px;
+  --nebula-space-12: 48px;
+}

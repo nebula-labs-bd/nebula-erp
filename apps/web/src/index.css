@@ -1,6 +1,19 @@
 @import "tailwindcss";
 
-:root {
+@import "./styles/theme.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
   font-family:
     Inter,
     system-ui,
@@ -8,16 +21,4 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-
-  color: #111827;
-  background: #ffffff;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
 }

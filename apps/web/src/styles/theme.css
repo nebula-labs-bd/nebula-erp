@@ -1,0 +1,18 @@
+@import "./tokens.css";
+
+:root {
+  color: var(--nebula-text-primary);
+  background: var(--nebula-background);
+}
+
+body {
+  background: var(--nebula-background);
+  color: var(--nebula-text-primary);
+}
+
+.surface {
+  background: var(--nebula-surface);
+  border: 1px solid var(--nebula-border);
+  border-radius: var(--nebula-radius-lg);
+  box-shadow: var(--nebula-shadow-sm);
+}
