@@ -1,5 +1,4 @@
 import { apiClient } from "../../../api/client";
-import { endpoints } from "../../../api/endpoints";
 
 import type {
   Product,
@@ -9,7 +8,7 @@ import type {
 
 export function getProducts() {
   return apiClient.get<Product[]>(
-    endpoints.inventory.products,
+    "/inventory/products",
   );
 }
 

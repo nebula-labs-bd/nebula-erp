@@ -5,10 +5,12 @@ export interface Product {
   category: string;
   quantity: number;
   price: number;
+  status: "in-stock" | "low-stock" | "out-of-stock";
 }
 
 export interface InventorySummary {
   totalProducts: number;
+  totalStock: number;
   lowStock: number;
-  totalValue: number;
+  inventoryValue: number;
 }
