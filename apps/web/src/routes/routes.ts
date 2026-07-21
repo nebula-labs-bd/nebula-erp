@@ -1,52 +1,35 @@
-import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import Inventory from "../pages/Inventory";
-import Sales from "../pages/Sales";
-import Purchase from "../pages/Purchase";
-import CRM from "../pages/CRM";
-import Accounting from "../pages/Accounting";
-import Reports from "../pages/Reports";
-import Settings from "../pages/Settings";
+
+import InventoryPage from "../modules/inventory/pages/InventoryPage";
+import SalesPage from "../modules/sales/pages/SalesPage";
+import CRMPage from "../modules/crm/pages/CRMPage";
+import AccountingPage from "../modules/accounting/pages/AccountingPage";
+import SettingsPage from "../modules/settings/pages/SettingsPage";
+
 
 export const routes = [
-  {
-  path: "/login",
-  element: Login,
-},
-  {
-    path: "/",
-    element: Dashboard,
-  },
   {
     path: "/dashboard",
     element: Dashboard,
   },
   {
     path: "/inventory",
-    element: Inventory,
+    element: InventoryPage,
   },
   {
     path: "/sales",
-    element: Sales,
-  },
-  {
-    path: "/purchase",
-    element: Purchase,
+    element: SalesPage,
   },
   {
     path: "/crm",
-    element: CRM,
+    element: CRMPage,
   },
   {
     path: "/accounting",
-    element: Accounting,
-  },
-  {
-    path: "/reports",
-    element: Reports,
+    element: AccountingPage,
   },
   {
     path: "/settings",
-    element: Settings,
+    element: SettingsPage,
   },
 ];
