@@ -1,13 +1,16 @@
 import InventoryStats from "../components/InventoryStats";
 import ProductTable from "../components/ProductTable";
 import ProductForm from "../components/ProductForm";
+import StockMovementForm from "../components/StockMovementForm";
+import StockMovementTable from "../components/StockMovementTable";
 
 import type {
   Product,
+  StockMovement,
 } from "../types/inventory.types";
 
 
-const demoProducts: Product[] = [
+const products: Product[] = [
   {
     id: "1",
     name: "Laptop",
@@ -16,6 +19,19 @@ const demoProducts: Product[] = [
     quantity: 15,
     price: 950,
     status: "in-stock",
+  },
+];
+
+
+const movements: StockMovement[] = [
+  {
+    id: "1",
+    productId: "1",
+    productName: "Laptop",
+    type: "stock-in",
+    quantity: 10,
+    note: "Initial stock",
+    date: "2026-07-22",
   },
 ];
 
@@ -30,7 +46,7 @@ export default function InventoryPage() {
         </h1>
 
         <p className="mt-2 text-[var(--nebula-text-secondary)]">
-          Manage products and stock.
+          Manage products and stock movements.
         </p>
       </div>
 
@@ -46,8 +62,16 @@ export default function InventoryPage() {
       <ProductForm />
 
 
+      <StockMovementForm />
+
+
       <ProductTable
-        products={demoProducts}
+        products={products}
+      />
+
+
+      <StockMovementTable
+        movements={movements}
       />
 
     </div>

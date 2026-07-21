@@ -8,6 +8,7 @@ export interface Product {
   status: "in-stock" | "low-stock" | "out-of-stock";
 }
 
+
 export interface CreateProductInput {
   name: string;
   sku: string;
@@ -16,10 +17,37 @@ export interface CreateProductInput {
   price: number;
 }
 
+
 export interface UpdateProductInput
   extends Partial<CreateProductInput> {
   id: string;
 }
+
+
+export type StockMovementType =
+  | "stock-in"
+  | "stock-out"
+  | "adjustment";
+
+
+export interface StockMovement {
+  id: string;
+  productId: string;
+  productName: string;
+  type: StockMovementType;
+  quantity: number;
+  note: string;
+  date: string;
+}
+
+
+export interface CreateStockMovementInput {
+  productId: string;
+  type: StockMovementType;
+  quantity: number;
+  note: string;
+}
+
 
 export interface InventorySummary {
   totalProducts: number;

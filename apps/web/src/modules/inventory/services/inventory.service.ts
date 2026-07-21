@@ -5,6 +5,8 @@ import type {
   InventorySummary,
   CreateProductInput,
   UpdateProductInput,
+  StockMovement,
+  CreateStockMovementInput,
 } from "../types/inventory.types";
 
 
@@ -48,5 +50,22 @@ export function deleteProduct(
   return apiClient.post(
     `/inventory/products/${id}/delete`,
     {},
+  );
+}
+
+
+export function getStockMovements() {
+  return apiClient.get<StockMovement[]>(
+    "/inventory/stock-movements",
+  );
+}
+
+
+export function createStockMovement(
+  data: CreateStockMovementInput,
+) {
+  return apiClient.post<StockMovement>(
+    "/inventory/stock-movements",
+    data,
   );
 }
