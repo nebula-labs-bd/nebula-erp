@@ -7,6 +7,8 @@ import type {
   UpdateProductInput,
   StockMovement,
   CreateStockMovementInput,
+  Warehouse,
+  CreateWarehouseInput,
 } from "../types/inventory.types";
 
 
@@ -66,6 +68,23 @@ export function createStockMovement(
 ) {
   return apiClient.post<StockMovement>(
     "/inventory/stock-movements",
+    data,
+  );
+}
+
+
+export function getWarehouses() {
+  return apiClient.get<Warehouse[]>(
+    "/inventory/warehouses",
+  );
+}
+
+
+export function createWarehouse(
+  data: CreateWarehouseInput,
+) {
+  return apiClient.post<Warehouse>(
+    "/inventory/warehouses",
     data,
   );
 }

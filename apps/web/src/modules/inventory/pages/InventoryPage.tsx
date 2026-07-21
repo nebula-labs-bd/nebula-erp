@@ -3,7 +3,22 @@ import ProductTable from "../components/ProductTable";
 import ProductForm from "../components/ProductForm";
 import StockMovementForm from "../components/StockMovementForm";
 import StockMovementTable from "../components/StockMovementTable";
+import WarehouseForm from "../components/WarehouseForm";
+import WarehouseTable from "../components/WarehouseTable";
 
+import type {
+  Warehouse,
+} from "../types/inventory.types";
+
+const warehouses: Warehouse[] = [
+  {
+    id: "1",
+    name: "Main Warehouse",
+    code: "WH-001",
+    location: "Dhaka",
+    status: "active",
+  },
+];
 import type {
   Product,
   StockMovement,
@@ -74,6 +89,11 @@ export default function InventoryPage() {
         movements={movements}
       />
 
+
+      <WarehouseForm />
+      <WarehouseTable
+        warehouses={warehouses}
+      />
     </div>
   );
 }

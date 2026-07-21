@@ -49,6 +49,22 @@ export interface CreateStockMovementInput {
 }
 
 
+export interface Warehouse {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+  status: "active" | "inactive";
+}
+
+
+export interface CreateWarehouseInput {
+  name: string;
+  code: string;
+  location: string;
+}
+
+
 export interface InventorySummary {
   totalProducts: number;
   totalStock: number;
