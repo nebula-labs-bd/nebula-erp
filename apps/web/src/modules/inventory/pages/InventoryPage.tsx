@@ -1,5 +1,6 @@
 import InventoryStats from "../components/InventoryStats";
 import ProductTable from "../components/ProductTable";
+import ProductForm from "../components/ProductForm";
 
 import type {
   Product,
@@ -16,15 +17,6 @@ const demoProducts: Product[] = [
     price: 950,
     status: "in-stock",
   },
-  {
-    id: "2",
-    name: "Wireless Mouse",
-    sku: "MOU-002",
-    category: "Accessories",
-    quantity: 3,
-    price: 25,
-    status: "low-stock",
-  },
 ];
 
 
@@ -34,21 +26,24 @@ export default function InventoryPage() {
 
       <div>
         <h1 className="text-2xl font-bold">
-          Inventory Intelligence
+          Inventory Management
         </h1>
 
         <p className="mt-2 text-[var(--nebula-text-secondary)]">
-          Monitor products, stock levels and inventory value.
+          Manage products and stock.
         </p>
       </div>
 
 
       <InventoryStats
-        totalProducts={2}
-        totalStock={18}
-        lowStock={1}
-        value={1500}
+        totalProducts={1}
+        totalStock={15}
+        lowStock={0}
+        value={950}
       />
+
+
+      <ProductForm />
 
 
       <ProductTable
