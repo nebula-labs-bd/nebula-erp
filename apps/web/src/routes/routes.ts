@@ -1,3 +1,4 @@
+import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Inventory from "../pages/Inventory";
 import Sales from "../pages/Sales";
@@ -8,6 +9,10 @@ import Reports from "../pages/Reports";
 import Settings from "../pages/Settings";
 
 export const routes = [
+  {
+  path: "/login",
+  element: Login,
+},
   {
     path: "/",
     element: Dashboard,
