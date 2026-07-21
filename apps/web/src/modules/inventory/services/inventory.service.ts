@@ -9,6 +9,7 @@ import type {
   CreateStockMovementInput,
   Warehouse,
   CreateWarehouseInput,
+  StockLedgerEntry,
 } from "../types/inventory.types";
 
 
@@ -86,5 +87,12 @@ export function createWarehouse(
   return apiClient.post<Warehouse>(
     "/inventory/warehouses",
     data,
+  );
+}
+
+
+export function getStockLedger() {
+  return apiClient.get<StockLedgerEntry[]>(
+    "/inventory/ledger",
   );
 }

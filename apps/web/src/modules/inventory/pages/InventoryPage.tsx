@@ -5,7 +5,24 @@ import StockMovementForm from "../components/StockMovementForm";
 import StockMovementTable from "../components/StockMovementTable";
 import WarehouseForm from "../components/WarehouseForm";
 import WarehouseTable from "../components/WarehouseTable";
+import InventoryFilters from "../components/InventoryFilters";
+import StockLedgerTable from "../components/StockLedgerTable";
 
+import type {
+  StockLedgerEntry,
+} from "../types/inventory.types";
+
+const ledger: StockLedgerEntry[] = [
+  {
+    id: "1",
+    productName: "Laptop",
+    warehouse: "Main Warehouse",
+    type: "stock-in",
+    quantity: 10,
+    balance: 25,
+    createdAt: "2026-07-22",
+  },
+];
 import type {
   Warehouse,
 } from "../types/inventory.types";
@@ -94,6 +111,11 @@ export default function InventoryPage() {
       <WarehouseTable
         warehouses={warehouses}
       />
+      <InventoryFilters />
+
+<StockLedgerTable
+  entries={ledger}
+/>
     </div>
   );
 }

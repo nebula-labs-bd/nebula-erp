@@ -65,6 +65,17 @@ export interface CreateWarehouseInput {
 }
 
 
+export interface StockLedgerEntry {
+  id: string;
+  productName: string;
+  warehouse: string;
+  type: StockMovementType;
+  quantity: number;
+  balance: number;
+  createdAt: string;
+}
+
+
 export interface InventorySummary {
   totalProducts: number;
   totalStock: number;
