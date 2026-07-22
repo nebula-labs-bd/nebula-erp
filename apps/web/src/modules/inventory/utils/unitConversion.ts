@@ -4,18 +4,22 @@ import type {
 
 
 
-/**
- * Convert a quantity from one unit to another
- *
- * Example:
- * 5 Rolls → Meter
- *
- * Conversion:
- * 1 Roll = 305 Meter
- *
- * Result:
- * 1525 Meter
- */
+export function findConversion(
+  conversions: UnitConversion[],
+  fromUnitId: string,
+  toUnitId: string,
+) {
+
+  return conversions.find(
+    (conversion) =>
+      conversion.fromUnitId === fromUnitId &&
+      conversion.toUnitId === toUnitId,
+  );
+
+}
+
+
+
 export function convertQuantity(
   quantity: number,
   conversion: UnitConversion,
@@ -27,18 +31,6 @@ export function convertQuantity(
 
 
 
-/**
- * Convert base unit quantity back to another unit
- *
- * Example:
- *
- * 610 Meter → Roll
- *
- * 1 Roll = 305 Meter
- *
- * Result:
- * 2 Rolls
- */
 export function convertFromBaseUnit(
   quantity: number,
   conversion: UnitConversion,
@@ -51,22 +43,73 @@ export function convertFromBaseUnit(
 
 
 /**
- * Find conversion rule
+ * Recursive conversion support
+ *
+ * Example:
+ *
+ * Carton → Box → Piece
+ *
  */
-export function findConversion(
-  conversions: UnitConversion[],
+export function convertBetweenUnits(
+  quantity: number,
   fromUnitId: string,
   toUnitId: string,
-) {
+  conversions: UnitConversion[],
+): number | null {
 
-  return conversions.find(
 
-    conversion =>
+  if (fromUnitId === toUnitId) {
+    return quantity;
+  }
 
-      conversion.fromUnitId === fromUnitId &&
 
-      conversion.toUnitId === toUnitId,
+  const direct =
+    findConversion(
+      conversions,
+      fromUnitId,
+      toUnitId,
+    );
 
-  );
+
+  if (direct) {
+
+    return (
+      quantity *
+      direct.multiplier
+    );
+
+  }
+
+
+
+  const next =
+    conversions.find(
+      (conversion) =>
+        conversion.fromUnitId === fromUnitId,
+    );
+
+
+
+  if (!next) {
+    return null;
+  }
+
+
+
+  const converted =
+    convertBetweenUnits(
+      quantity *
+      next.multiplier,
+
+      next.toUnitId,
+
+      toUnitId,
+
+      conversions,
+    );
+
+
+
+  return converted;
 
 }
