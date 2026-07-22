@@ -10,112 +10,273 @@ import StockLedgerTable from "../components/StockLedgerTable";
 
 import type {
   StockLedgerEntry,
-} from "../types/inventory.types";
-
-const ledger: StockLedgerEntry[] = [
-  {
-    id: "1",
-    productName: "Laptop",
-    warehouse: "Main Warehouse",
-    type: "stock-in",
-    quantity: 10,
-    balance: 25,
-    createdAt: "2026-07-22",
-  },
-];
-import type {
+  StockMovement,
   Warehouse,
 } from "../types/inventory.types";
 
-const warehouses: Warehouse[] = [
-  {
-    id: "1",
-    name: "Main Warehouse",
-    code: "WH-001",
-    location: "Dhaka",
-    status: "active",
-  },
-];
 import type {
-  Product,
-  StockMovement,
-} from "../types/inventory.types";
+  ProductMaster,
+} from "../types/product.types";
 
 
-const products: Product[] = [
+
+const products: ProductMaster[] = [
   {
     id: "1",
+
     name: "Laptop",
+
     sku: "LAP-001",
-    category: "Electronics",
-    quantity: 15,
-    price: 950,
-    status: "in-stock",
+
+    barcode: "123456789",
+
+    type: "single",
+
+
+    categoryId: "electronics",
+
+    brandId: "generic",
+
+    unitId: "piece",
+
+
+    shortDescription:
+      "Business laptop",
+
+    longDescription:
+      "High performance laptop for office and professional use.",
+
+
+    tags: [
+      "electronics",
+      "laptop",
+    ],
+
+
+    images: [],
+
+    attributes: [],
+
+    variants: [],
+
+
+    costPrice: 800,
+
+    sellingPrice: 950,
+
+    wholesalePrice: 900,
+
+
+    taxRate: 0,
+
+
+    openingStock: 15,
+
+    currentStock: 15,
+
+    reorderLevel: 5,
+
+
+    warehouseIds: [
+      "1",
+    ],
+
+
+    batchTracking: false,
+
+    serialTracking: true,
+
+
+    warranty: {
+      enabled: true,
+      duration: 2,
+      unit: "years",
+    },
+
+
+    integration: {
+      syncStatus: "not-synced",
+    },
+
+
+    createdAt:
+      "2026-07-22",
+
+    updatedAt:
+      "2026-07-22",
   },
 ];
+
 
 
 const movements: StockMovement[] = [
   {
     id: "1",
+
     productId: "1",
+
     productName: "Laptop",
+
     type: "stock-in",
+
     quantity: 10,
+
     note: "Initial stock",
+
     date: "2026-07-22",
   },
 ];
 
 
+
+const warehouses: Warehouse[] = [
+  {
+    id: "1",
+
+    name: "Main Warehouse",
+
+    code: "WH-001",
+
+    location: "Dhaka",
+
+    status: "active",
+  },
+];
+
+
+
+const ledger: StockLedgerEntry[] = [
+  {
+    id: "1",
+
+    productName: "Laptop",
+
+    warehouse:
+      "Main Warehouse",
+
+    type: "stock-in",
+
+    quantity: 10,
+
+    balance: 25,
+
+    createdAt:
+      "2026-07-22",
+  },
+];
+
+
+
 export default function InventoryPage() {
+
   return (
+
     <div className="space-y-6">
 
+
       <div>
+
         <h1 className="text-2xl font-bold">
           Inventory Management
         </h1>
 
+
         <p className="mt-2 text-[var(--nebula-text-secondary)]">
-          Manage products and stock movements.
+          Manage products, stock movements, warehouses and inventory records.
         </p>
+
       </div>
 
 
+
       <InventoryStats
-        totalProducts={1}
-        totalStock={15}
+
+        totalProducts={
+          products.length
+        }
+
+        totalStock={
+          products.reduce(
+            (sum, product) =>
+              sum + product.currentStock,
+            0,
+          )
+        }
+
         lowStock={0}
-        value={950}
+
+        value={
+          products.reduce(
+            (sum, product) =>
+              sum +
+              (
+                product.currentStock *
+                product.sellingPrice
+              ),
+            0,
+          )
+        }
+
       />
+
 
 
       <ProductForm />
 
 
+
+      <ProductTable
+
+        products={
+          products
+        }
+
+      />
+
+
+
       <StockMovementForm />
 
 
-      <ProductTable
-        products={products}
-      />
-
 
       <StockMovementTable
-        movements={movements}
+
+        movements={
+          movements
+        }
+
       />
+
 
 
       <WarehouseForm />
+
+
+
       <WarehouseTable
-        warehouses={warehouses}
+
+        warehouses={
+          warehouses
+        }
+
       />
+
+
+
       <InventoryFilters />
 
-<StockLedgerTable
-  entries={ledger}
-/>
+
+
+      <StockLedgerTable
+
+        entries={
+          ledger
+        }
+
+      />
+
+
     </div>
+
   );
 }
