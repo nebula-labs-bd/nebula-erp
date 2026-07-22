@@ -1,4 +1,9 @@
+
 import { useEffect, useState } from "react";
+
+import {
+  useUnits,
+} from "../hooks/useUnits";
 
 import type {
   ProductMaster,
@@ -96,6 +101,9 @@ export default function ProductForm({
     update,
   } = useProductMutation();
 
+  const {
+  data: units = [],
+} = useUnits();
 
   const [form, setForm] =
     useState<ProductFormState>(initialState);
@@ -375,7 +383,40 @@ reorderLevel:
 
       </section>
 
+      <select
+  className="w-full rounded border p-2"
+  value={form.unitId}
+  onChange={
+    e =>
+      updateField(
+        "unitId",
+        e.target.value,
+      )
+  }
+>
 
+  <option value="">
+    Select Unit
+  </option>
+
+
+  {units.map((unit) => (
+
+    <option
+      key={unit.id}
+      value={unit.id}
+    >
+
+      {unit.name}
+      {" "}
+      ({unit.shortName})
+
+    </option>
+
+  ))}
+
+
+</select>
 
       <section className="space-y-3">
 

@@ -7,6 +7,10 @@ import WarehouseForm from "../components/WarehouseForm";
 import WarehouseTable from "../components/WarehouseTable";
 import InventoryFilters from "../components/InventoryFilters";
 import StockLedgerTable from "../components/StockLedgerTable";
+import UnitForm from "../components/UnitForm";
+import UnitTable from "../components/UnitTable";
+import UnitConversionForm from "../components/UnitConversionForm";
+import UnitConversionTable from "../components/UnitConversionTable";
 
 import type {
   StockLedgerEntry,
@@ -19,6 +23,78 @@ import type {
 } from "../types/product.types";
 
 
+import type {
+  Unit,
+} from "../types/unit.types";
+
+
+const units: Unit[] = [
+
+  {
+    id: "1",
+
+    name: "Meter",
+
+    shortName: "m",
+
+    status: "active",
+
+    isBaseUnit: true,
+
+    conversions: [],
+
+    createdAt: "2026-07-23",
+
+    updatedAt: "2026-07-23",
+  },
+
+
+  {
+    id: "2",
+
+    name: "Roll",
+
+    shortName: "roll",
+
+    status: "active",
+
+    isBaseUnit: false,
+
+    conversions: [
+
+      {
+        id: "1",
+
+        fromUnitId: "2",
+
+        toUnitId: "1",
+
+        multiplier: 305,
+
+      },
+
+    ],
+
+    createdAt: "2026-07-23",
+
+    updatedAt: "2026-07-23",
+  },
+
+];
+
+
+
+const unitConversions = [
+  {
+    id: "1",
+
+    fromUnitId: "Roll",
+
+    toUnitId: "Meter",
+
+    multiplier: 305,
+  },
+];
 
 const products: ProductMaster[] = [
   {
@@ -261,7 +337,20 @@ export default function InventoryPage() {
 
       />
 
+<UnitForm />
 
+
+<UnitTable
+  units={units}
+/>
+
+
+<UnitConversionForm />
+
+
+<UnitConversionTable
+  conversions={unitConversions}
+/>
 
       <InventoryFilters />
 
