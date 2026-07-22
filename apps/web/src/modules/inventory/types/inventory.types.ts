@@ -32,20 +32,53 @@ export type StockMovementType =
 
 export interface StockMovement {
   id: string;
+
   productId: string;
+
   productName: string;
+
+
   type: StockMovementType;
+
+
+  // User entered quantity
   quantity: number;
+
+
+  // Selected unit
+  unitId: string;
+
+
+  // Converted inventory quantity
+  baseQuantity: number;
+
+
   note: string;
+
   date: string;
 }
 
 
+
 export interface CreateStockMovementInput {
+
   productId: string;
+
+
   type: StockMovementType;
+
+
   quantity: number;
+
+
+  unitId: string;
+
+
+  baseQuantity: number;
+
+
   note: string;
+
 }
 
 

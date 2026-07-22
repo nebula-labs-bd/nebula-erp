@@ -197,6 +197,10 @@ const movements: StockMovement[] = [
 
     quantity: 10,
 
+    unitId: "piece",
+
+    baseQuantity: 10,
+
     note: "Initial stock",
 
     date: "2026-07-22",
