@@ -1,10 +1,12 @@
 import { apiClient } from "../../../api/client";
 
 import type {
-  Product,
+  ProductMaster,
+  CreateProductMasterInput,
+} from "../types/product.types";
+
+import type {
   InventorySummary,
-  CreateProductInput,
-  UpdateProductInput,
   StockMovement,
   CreateStockMovementInput,
   Warehouse,
@@ -14,11 +16,10 @@ import type {
 
 
 export function getProducts() {
-  return apiClient.get<Product[]>(
+  return apiClient.get<ProductMaster[]>(
     "/inventory/products",
   );
 }
-
 
 export function getInventorySummary() {
   return apiClient.get<InventorySummary>(
@@ -26,11 +27,10 @@ export function getInventorySummary() {
   );
 }
 
-
 export function createProduct(
-  data: CreateProductInput,
+  data: CreateProductMasterInput,
 ) {
-  return apiClient.post<Product>(
+  return apiClient.post<ProductMaster>(
     "/inventory/products",
     data,
   );
@@ -38,9 +38,9 @@ export function createProduct(
 
 
 export function updateProduct(
-  data: UpdateProductInput,
+  data: ProductMaster,
 ) {
-  return apiClient.post<Product>(
+  return apiClient.post<ProductMaster>(
     `/inventory/products/${data.id}`,
     data,
   );

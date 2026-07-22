@@ -18,12 +18,14 @@ export default function ProductForm() {
 
   function submit() {
     create.mutate({
-      name,
-      sku,
-      category: "General",
-      quantity,
-      price,
-    });
+  name,
+  sku,
+  type: "single",
+  categoryId: "general",
+  openingStock: quantity,
+  costPrice: price,
+  sellingPrice: price,
+});
 
     setName("");
     setSku("");
