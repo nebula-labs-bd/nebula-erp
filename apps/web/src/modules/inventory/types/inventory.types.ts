@@ -138,6 +138,12 @@ export interface StockLedgerEntry {
   type: StockMovementType;
   quantity: number;
   balance: number;
+  referenceType?:
+    | "purchase"
+    | "sale"
+    | "transfer"
+    | "adjustment";
+  referenceId?: string;
   createdAt: string;
 }
 

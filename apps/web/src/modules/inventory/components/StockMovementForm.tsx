@@ -87,6 +87,13 @@ export default function StockMovementForm() {
     useState(0);
 
 
+  const [
+    referenceId,
+    setReferenceId,
+  ] =
+    useState("");
+
+
 
   const [
     type,
@@ -157,6 +164,12 @@ export default function StockMovementForm() {
       baseQuantity,
 
       type,
+
+      referenceType:
+        "adjustment",
+
+      referenceId:
+        referenceId || undefined,
 
       note:
         "Manual stock update",
@@ -317,6 +330,19 @@ export default function StockMovementForm() {
         </option>
 
       </select>
+
+
+      <input
+        className="w-full rounded border p-2"
+        type="text"
+        placeholder="Reference ID (optional)"
+        value={referenceId}
+        onChange={(e) =>
+          setReferenceId(
+            e.target.value,
+          )
+        }
+      />
 
 
 
