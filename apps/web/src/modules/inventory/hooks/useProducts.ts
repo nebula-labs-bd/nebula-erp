@@ -8,5 +8,15 @@ import {
 
 
 export function useProducts() {
-  return useQuery(productsQuery);
+
+  return useQuery({
+
+    ...productsQuery,
+
+    select:
+      (response) =>
+        response.data,
+
+  });
+
 }

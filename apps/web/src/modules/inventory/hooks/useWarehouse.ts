@@ -15,26 +15,53 @@ import {
 
 
 export function useWarehouses() {
+
   return useQuery({
+
     queryKey: [
       ...inventoryKeys.all,
       "warehouses",
     ],
-    queryFn: getWarehouses,
+
+    queryFn:
+      async () => {
+
+        const response =
+          await getWarehouses();
+
+        return response.data;
+
+      },
+
   });
+
 }
 
 
+
 export function useWarehouseMutation() {
-  const queryClient = useQueryClient();
+
+  const queryClient =
+    useQueryClient();
+
 
   return useMutation({
-    mutationFn: createWarehouse,
+
+    mutationFn:
+      createWarehouse,
+
 
     onSuccess() {
+
       queryClient.invalidateQueries({
-        queryKey: inventoryKeys.all,
+
+        queryKey:
+          inventoryKeys.all,
+
       });
+
     },
+
   });
+
 }

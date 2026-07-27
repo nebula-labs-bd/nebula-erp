@@ -6,20 +6,25 @@ import {
   getUnitConversions,
 } from "../services/inventory.service";
 
-import {
-  unitConversionKeys,
-} from "../queries/unitConversion.keys";
-
 
 export function useUnitConversions() {
 
   return useQuery({
 
-    queryKey:
-      unitConversionKeys.lists(),
+    queryKey: [
+      "inventory",
+      "unit-conversions",
+    ],
 
     queryFn:
-      getUnitConversions,
+      async () => {
+
+        const response =
+          await getUnitConversions();
+
+        return response.data;
+
+      },
 
   });
 

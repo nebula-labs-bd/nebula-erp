@@ -1,4 +1,5 @@
 import {
+  useMemo,
   useState,
 } from "react";
 
@@ -6,25 +7,138 @@ import {
   useStockMovement,
 } from "../hooks/useStockMovement";
 
+import {
+  useProducts,
+} from "../hooks/useProducts";
+
+import {
+  useWarehouses,
+} from "../hooks/useWarehouse";
+
+import {
+  useUnits,
+} from "../hooks/useUnits";
+
+import {
+  useUnitConversions,
+} from "../hooks/useUnitConversions";
+
+import {
+  convertBetweenUnits,
+} from "../utils/unitConversion";
+
 
 export default function StockMovementForm() {
 
-  const mutation = useStockMovement();
+  const mutation =
+    useStockMovement();
 
 
-  const [productId, setProductId] =
+  const {
+    data: products = [],
+  } =
+    useProducts();
+
+
+  const {
+    data: warehouses = [],
+  } =
+    useWarehouses();
+
+
+  const {
+    data: units = [],
+  } =
+    useUnits();
+
+
+  const {
+    data: conversions = [],
+  } =
+    useUnitConversions();
+
+
+
+  const [
+    productId,
+    setProductId,
+  ] =
     useState("");
 
-  const [quantity, setQuantity] =
+
+  const [
+    warehouseId,
+    setWarehouseId,
+  ] =
+    useState("");
+
+
+  const [
+    unitId,
+    setUnitId,
+  ] =
+    useState("");
+
+
+  const [
+    quantity,
+    setQuantity,
+  ] =
     useState(0);
 
-  const [unitId, setUnitId] =
-    useState("meter");
 
-  const [type, setType] =
+
+  const [
+    type,
+    setType,
+  ] =
     useState<
-      "stock-in" | "stock-out" | "adjustment"
+      "stock-in" |
+      "stock-out" |
+      "adjustment"
     >("stock-in");
+
+
+
+  const selectedProduct =
+    products.find(
+      (product) =>
+        product.id === productId,
+    );
+
+
+
+  const baseQuantity =
+    useMemo(() => {
+
+      if (
+        !selectedProduct ||
+        !unitId ||
+        !selectedProduct.unitId
+      ) {
+        return quantity;
+      }
+
+
+      const result =
+        convertBetweenUnits(
+          quantity,
+          unitId,
+          selectedProduct.unitId,
+          conversions,
+        );
+
+
+      return result ?? quantity;
+
+
+    }, [
+      quantity,
+      unitId,
+      selectedProduct,
+      conversions,
+    ]);
+
 
 
 
@@ -34,19 +148,18 @@ export default function StockMovementForm() {
 
       productId,
 
+      warehouseId,
+
       quantity,
 
       unitId,
 
-      // Temporary:
-      // 1 base unit = entered quantity
-      // Real conversion engine will replace this
-
-      baseQuantity: quantity,
+      baseQuantity,
 
       type,
 
-      note: "Manual stock update",
+      note:
+        "Manual stock update",
 
     });
 
@@ -65,70 +178,76 @@ export default function StockMovementForm() {
 
 
 
-      <input
-
+      <select
         className="w-full rounded border p-2"
-
-        placeholder="Product ID"
-
         value={productId}
-
         onChange={(e) =>
           setProductId(
             e.target.value,
           )
         }
-
-      />
-
-
-
-      <select
-
-        className="w-full rounded border p-2"
-
-        value={type}
-
-        onChange={(e) =>
-          setType(
-            e.target.value as
-            | "stock-in"
-            | "stock-out"
-            | "adjustment",
-          )
-        }
-
       >
 
-        <option value="stock-in">
-          Stock In
+        <option value="">
+          Select Product
         </option>
 
 
-        <option value="stock-out">
-          Stock Out
-        </option>
+        {products.map(
+          (product) => (
 
+            <option
+              key={product.id}
+              value={product.id}
+            >
+              {product.name}
+            </option>
 
-        <option value="adjustment">
-          Adjustment
-        </option>
-
+          ),
+        )}
 
       </select>
 
 
 
-      <input
-
+      <select
         className="w-full rounded border p-2"
+        value={warehouseId}
+        onChange={(e) =>
+          setWarehouseId(
+            e.target.value,
+          )
+        }
+      >
 
+        <option value="">
+          Select Warehouse
+        </option>
+
+
+        {warehouses.map(
+          (warehouse) => (
+
+            <option
+              key={warehouse.id}
+              value={warehouse.id}
+            >
+              {warehouse.name}
+            </option>
+
+          ),
+        )}
+
+      </select>
+
+
+
+
+      <input
+        className="w-full rounded border p-2"
         type="number"
-
         placeholder="Quantity"
-
         value={quantity}
-
         onChange={(e) =>
           setQuantity(
             Number(
@@ -136,51 +255,89 @@ export default function StockMovementForm() {
             ),
           )
         }
-
       />
 
 
 
-      <input
-
+      <select
         className="w-full rounded border p-2"
-
-        placeholder="Unit ID"
-
         value={unitId}
-
         onChange={(e) =>
           setUnitId(
             e.target.value,
           )
         }
+      >
 
-      />
+        <option value="">
+          Select Unit
+        </option>
+
+
+        {units.map(
+          (unit) => (
+
+            <option
+              key={unit.id}
+              value={unit.id}
+            >
+              {unit.name}
+            </option>
+
+          ),
+        )}
+
+      </select>
 
 
 
-      <div className="text-sm">
+      <select
+        className="w-full rounded border p-2"
+        value={type}
+        onChange={(e) =>
+          setType(
+            e.target.value as
+              | "stock-in"
+              | "stock-out"
+              | "adjustment",
+          )
+        }
+      >
+
+        <option value="stock-in">
+          Stock In
+        </option>
+
+        <option value="stock-out">
+          Stock Out
+        </option>
+
+        <option value="adjustment">
+          Adjustment
+        </option>
+
+      </select>
+
+
+
+      <div className="rounded border p-3 text-sm">
 
         Base Quantity:
 
         {" "}
 
-        {quantity}
+        {baseQuantity}
 
       </div>
 
 
 
+
       <button
-
         className="rounded bg-black px-4 py-2 text-white"
-
         onClick={submit}
-
       >
-
         Update Stock
-
       </button>
 
 

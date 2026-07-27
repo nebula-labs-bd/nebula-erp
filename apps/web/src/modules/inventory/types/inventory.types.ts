@@ -38,24 +38,41 @@ export interface StockMovement {
   productName: string;
 
 
+  warehouseId: string;
+
+
   type: StockMovementType;
 
 
-  // User entered quantity
   quantity: number;
 
 
-  // Selected unit
   unitId: string;
 
 
-  // Converted inventory quantity
   baseQuantity: number;
+
+
+  referenceType?: 
+    | "purchase"
+    | "sale"
+    | "adjustment"
+    | "transfer";
+
+
+  referenceId?: string;
+
+
+  reason?: string;
 
 
   note: string;
 
-  date: string;
+
+  createdBy?: string;
+
+
+  createdAt: string;
 }
 
 
@@ -65,6 +82,9 @@ export interface CreateStockMovementInput {
   productId: string;
 
 
+  warehouseId: string;
+
+
   type: StockMovementType;
 
 
@@ -75,6 +95,19 @@ export interface CreateStockMovementInput {
 
 
   baseQuantity: number;
+
+
+  referenceType?:
+    | "purchase"
+    | "sale"
+    | "adjustment"
+    | "transfer";
+
+
+  referenceId?: string;
+
+
+  reason?: string;
 
 
   note: string;

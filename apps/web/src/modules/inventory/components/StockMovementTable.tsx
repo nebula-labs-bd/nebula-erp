@@ -65,7 +65,7 @@ export default function StockMovementTable({
 
 
               <td className="p-3">
-                {movement.date}
+                {movement.createdAt}
               </td>
 
             </tr>

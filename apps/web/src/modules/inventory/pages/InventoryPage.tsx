@@ -193,6 +193,8 @@ const movements: StockMovement[] = [
 
     productName: "Laptop",
 
+    warehouseId: "main",
+
     type: "stock-in",
 
     quantity: 10,
@@ -203,7 +205,7 @@ const movements: StockMovement[] = [
 
     note: "Initial stock",
 
-    date: "2026-07-22",
+createdAt: "2026-07-22",
   },
 ];
 
