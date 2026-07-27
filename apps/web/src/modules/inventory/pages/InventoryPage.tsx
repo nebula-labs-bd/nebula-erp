@@ -203,9 +203,13 @@ const movements: StockMovement[] = [
 
     baseQuantity: 10,
 
+    referenceType: "adjustment",
+
+    referenceId: "ADJ-001",
+
     note: "Initial stock",
 
-createdAt: "2026-07-22",
+    createdAt: "2026-07-22",
   },
 ];
 

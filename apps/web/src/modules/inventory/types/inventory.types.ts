@@ -56,20 +56,14 @@ export interface StockMovement {
   referenceType?: 
     | "purchase"
     | "sale"
-    | "adjustment"
-    | "transfer";
+    | "transfer"
+    | "adjustment";
 
 
   referenceId?: string;
 
 
-  reason?: string;
-
-
   note: string;
-
-
-  createdBy?: string;
 
 
   createdAt: string;
@@ -100,14 +94,11 @@ export interface CreateStockMovementInput {
   referenceType?:
     | "purchase"
     | "sale"
-    | "adjustment"
-    | "transfer";
+    | "transfer"
+    | "adjustment";
 
 
   referenceId?: string;
-
-
-  reason?: string;
 
 
   note: string;

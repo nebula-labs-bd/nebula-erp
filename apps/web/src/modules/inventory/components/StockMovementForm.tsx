@@ -169,7 +169,7 @@ export default function StockMovementForm() {
         "adjustment",
 
       referenceId:
-        referenceId || undefined,
+        referenceId,
 
       note:
         "Manual stock update",
