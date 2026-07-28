@@ -207,6 +207,8 @@ const movements: StockMovement[] = [
 
     referenceId: "ADJ-001",
 
+    transactionDate: "2026-07-22",
+
     note: "Initial stock",
 
     createdAt: "2026-07-22",

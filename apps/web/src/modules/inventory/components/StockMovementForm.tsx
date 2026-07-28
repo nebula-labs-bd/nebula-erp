@@ -171,6 +171,9 @@ export default function StockMovementForm() {
       referenceId:
         referenceId,
 
+      transactionDate:
+        new Date().toISOString(),
+
       note:
         "Manual stock update",
 
@@ -332,17 +335,23 @@ export default function StockMovementForm() {
       </select>
 
 
-      <input
-        className="w-full rounded border p-2"
-        type="text"
-        placeholder="Reference ID (optional)"
-        value={referenceId}
-        onChange={(e) =>
-          setReferenceId(
-            e.target.value,
-          )
-        }
-      />
+      <label className="block space-y-1">
+        <span className="text-sm">
+          Reference ID
+        </span>
+
+        <input
+          className="w-full rounded border p-2"
+          type="text"
+          placeholder="PO-001, INV-001, or ADJ-001"
+          value={referenceId}
+          onChange={(e) =>
+            setReferenceId(
+              e.target.value,
+            )
+          }
+        />
+      </label>
 
 
 

@@ -63,6 +63,9 @@ export interface StockMovement {
   referenceId?: string;
 
 
+  transactionDate?: string;
+
+
   note: string;
 
 
@@ -99,6 +102,9 @@ export interface CreateStockMovementInput {
 
 
   referenceId?: string;
+
+
+  transactionDate?: string;
 
 
   note: string;
