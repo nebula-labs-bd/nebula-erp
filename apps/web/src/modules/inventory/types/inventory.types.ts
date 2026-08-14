@@ -151,3 +151,50 @@ export interface InventorySummary {
   lowStock: number;
   inventoryValue: number;
 }
+
+
+export type StockAdjustmentType =
+  | "increase"
+  | "decrease";
+
+
+export interface StockAdjustment {
+  id: string;
+
+  productId: string;
+
+  warehouseId: string;
+
+  unitId: string;
+
+  quantity: number;
+
+  baseQuantity: number;
+
+  type: StockAdjustmentType;
+
+  reason: string;
+
+  note: string;
+
+  createdAt: string;
+}
+
+
+export interface CreateStockAdjustmentInput {
+  productId: string;
+
+  warehouseId: string;
+
+  unitId: string;
+
+  quantity: number;
+
+  baseQuantity: number;
+
+  type: StockAdjustmentType;
+
+  reason: string;
+
+  note: string;
+}
