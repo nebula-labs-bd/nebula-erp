@@ -198,3 +198,41 @@ export interface CreateStockAdjustmentInput {
 
   note: string;
 }
+
+
+export interface StockTransfer {
+  id: string;
+
+  productId: string;
+
+  fromWarehouseId: string;
+
+  toWarehouseId: string;
+
+  unitId: string;
+
+  quantity: number;
+
+  baseQuantity: number;
+
+  note: string;
+
+  createdAt: string;
+}
+
+
+export interface CreateStockTransferInput {
+  productId: string;
+
+  fromWarehouseId: string;
+
+  toWarehouseId: string;
+
+  unitId: string;
+
+  quantity: number;
+
+  baseQuantity: number;
+
+  note: string;
+}

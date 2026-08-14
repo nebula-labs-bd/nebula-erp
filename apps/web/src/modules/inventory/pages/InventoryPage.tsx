@@ -13,6 +13,8 @@ import UnitConversionForm from "../components/UnitConversionForm";
 import UnitConversionTable from "../components/UnitConversionTable";
 import StockAdjustmentForm from "../components/StockAdjustmentForm";
 import StockAdjustmentTable from "../components/StockAdjustmentTable";
+import StockTransferForm from "../components/StockTransferForm";
+import StockTransferTable from "../components/StockTransferTable";
 
 import type {
   StockLedgerEntry,
@@ -383,6 +385,12 @@ export default function InventoryPage() {
 
 
       <StockAdjustmentTable />
+
+
+      <StockTransferForm />
+
+
+      <StockTransferTable />
 
 
     </div>

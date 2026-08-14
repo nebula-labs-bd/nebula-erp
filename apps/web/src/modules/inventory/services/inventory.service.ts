@@ -24,6 +24,8 @@ import type {
   StockLedgerEntry,
   StockAdjustment,
   CreateStockAdjustmentInput,
+  StockTransfer,
+  CreateStockTransferInput,
 } from "../types/inventory.types";
 
 
@@ -105,6 +107,23 @@ export function createStockAdjustment(
 ) {
   return apiClient.post<StockAdjustment>(
     "/inventory/stock-adjustments",
+    data,
+  );
+}
+
+
+export function getStockTransfers() {
+  return apiClient.get<StockTransfer[]>(
+    "/inventory/stock-transfers",
+  );
+}
+
+
+export function createStockTransfer(
+  data: CreateStockTransferInput,
+) {
+  return apiClient.post<StockTransfer>(
+    "/inventory/stock-transfers",
     data,
   );
 }
