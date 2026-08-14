@@ -1,4 +1,5 @@
 import InventoryStats from "../components/InventoryStats";
+import InventoryDashboard from "../components/InventoryDashboard";
 import ProductTable from "../components/ProductTable";
 import ProductForm from "../components/ProductForm";
 import StockMovementForm from "../components/StockMovementForm";
@@ -266,6 +267,12 @@ export default function InventoryPage() {
     <div className="space-y-6">
 
 
+      {/* Inventory Dashboard — view / analytics layer */}
+
+      <InventoryDashboard />
+
+
+
       <div>
 
         <h1 className="text-2xl font-bold">
@@ -313,60 +320,124 @@ export default function InventoryPage() {
 
 
 
-      <ProductForm />
+      {/* Products */}
+
+      <div
+        id="inventory-products"
+        className="space-y-6"
+      >
+
+        <ProductForm />
 
 
 
-      <ProductTable
+        <ProductTable
 
-        products={
-          products
-        }
+          products={
+            products
+          }
 
+        />
+
+      </div>
+
+
+
+      {/* Warehouses */}
+
+      <div
+        id="inventory-warehouses"
+        className="space-y-6"
+      >
+
+        <WarehouseForm />
+
+
+
+        <WarehouseTable
+
+          warehouses={
+            warehouses
+          }
+
+        />
+
+      </div>
+
+
+
+      {/* Stock Movement */}
+
+      <div
+        id="inventory-movements"
+        className="space-y-6"
+      >
+
+        <StockMovementForm />
+
+
+
+        <StockMovementTable
+
+          movements={
+            movements
+          }
+
+        />
+
+      </div>
+
+
+
+      {/* Stock Adjustment */}
+
+      <div
+        id="inventory-adjustment"
+        className="space-y-6"
+      >
+
+        <StockAdjustmentForm />
+
+
+        <StockAdjustmentTable />
+
+      </div>
+
+
+
+      {/* Stock Transfer */}
+
+      <div
+        id="inventory-transfer"
+        className="space-y-6"
+      >
+
+        <StockTransferForm />
+
+
+        <StockTransferTable />
+
+      </div>
+
+
+
+      {/* Units & Conversions */}
+
+      <UnitForm />
+
+
+      <UnitTable
+        units={units}
       />
 
 
-
-      <StockMovementForm />
-
+      <UnitConversionForm />
 
 
-      <StockMovementTable
-
-        movements={
-          movements
-        }
-
+      <UnitConversionTable
+        conversions={unitConversions}
       />
 
-
-
-      <WarehouseForm />
-
-
-
-      <WarehouseTable
-
-        warehouses={
-          warehouses
-        }
-
-      />
-
-<UnitForm />
-
-
-<UnitTable
-  units={units}
-/>
-
-
-<UnitConversionForm />
-
-
-<UnitConversionTable
-  conversions={unitConversions}
-/>
 
       <InventoryFilters />
 
@@ -379,18 +450,6 @@ export default function InventoryPage() {
         }
 
       />
-
-
-      <StockAdjustmentForm />
-
-
-      <StockAdjustmentTable />
-
-
-      <StockTransferForm />
-
-
-      <StockTransferTable />
 
 
     </div>
