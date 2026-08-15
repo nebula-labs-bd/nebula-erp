@@ -1,13 +1,18 @@
 export const salesKeys = {
   all: ["sales"] as const,
 
+  customers: () => [
+    ...salesKeys.all,
+    "customers",
+  ] as const,
+
   orders: () => [
     ...salesKeys.all,
     "orders",
   ] as const,
 
-  summary: () => [
+  deliveries: () => [
     ...salesKeys.all,
-    "summary",
+    "deliveries",
   ] as const,
 };

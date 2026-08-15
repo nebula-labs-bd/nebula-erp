@@ -1,14 +1,14 @@
 import type { SalesOrder } from "../types/sales.types";
 
 
-type SalesTableProps = {
+type SalesOrderTableProps = {
   orders: SalesOrder[];
 };
 
 
-export default function SalesTable({
+export default function SalesOrderTable({
   orders,
-}: SalesTableProps) {
+}: SalesOrderTableProps) {
   return (
     <div className="surface overflow-hidden">
       <table className="w-full">
@@ -38,7 +38,21 @@ export default function SalesTable({
 
               <td className="p-3">{order.date}</td>
 
-              <td className="p-3">{order.status}</td>
+              <td className="p-3">
+                <span
+                  className={
+                    order.status === "delivered"
+                      ? "rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-700"
+                      : order.status === "cancelled"
+                        ? "rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-700"
+                        : order.status === "confirmed"
+                          ? "rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700"
+                          : "rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600"
+                  }
+                >
+                  {order.status}
+                </span>
+              </td>
 
               <td className="p-3">
                 ${order.total.toFixed(2)}
