@@ -1,6 +1,7 @@
 import Dashboard from "../pages/Dashboard";
 
 import InventoryPage from "../modules/inventory/pages/InventoryPage";
+import PurchasePage from "../modules/purchase/pages/PurchasePage";
 import SalesPage from "../modules/sales/pages/SalesPage";
 import CRMPage from "../modules/crm/pages/CRMPage";
 import AccountingPage from "../modules/accounting/pages/AccountingPage";
@@ -15,6 +16,10 @@ export const routes = [
   {
     path: "/inventory",
     element: InventoryPage,
+  },
+  {
+    path: "/purchase",
+    element: PurchasePage,
   },
   {
     path: "/sales",
