@@ -1,44 +1,61 @@
-import TransactionTable from "../components/TransactionTable";
+import AccountForm from "../components/AccountForm";
+import AccountTable from "../components/AccountTable";
+import JournalEntryForm from "../components/JournalEntryForm";
+import JournalEntryTable from "../components/JournalEntryTable";
+import GeneralLedgerTable from "../components/GeneralLedgerTable";
 
-import type {
-  Transaction,
-} from "../types/accounting.types";
-
-
-const demoTransactions: Transaction[] = [
-  {
-    id: "TX-001",
-    type: "income",
-    description: "Sales Revenue",
-    date: "2026-07-21",
-    amount: 5000,
-  },
-  {
-    id: "TX-002",
-    type: "expense",
-    description: "Office Expense",
-    date: "2026-07-20",
-    amount: 850,
-  },
-];
-
+import { useAccounts } from "../hooks/useAccounts";
+import {
+  useJournalEntries,
+  useJournalMutation,
+} from "../hooks/useJournalEntries";
+import { useGeneralLedger } from "../hooks/useGeneralLedger";
 
 export default function AccountingPage() {
+  const { data: accounts = [] } = useAccounts();
+  const { data: journalEntries = [] } = useJournalEntries();
+  const { data: ledger = [] } = useGeneralLedger();
+  const { post } = useJournalMutation();
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold">
-          Accounting Module
-        </h1>
+        <h1 className="text-2xl font-bold">Accounting Module</h1>
 
         <p className="mt-2 text-[var(--nebula-text-secondary)]">
-          Manage financial transactions and reports.
+          Manage the chart of accounts, journal entries and the general ledger.
+          Accounting records financial events only and never mutates inventory,
+          products or stock quantities.
         </p>
       </div>
 
-      <TransactionTable
-        transactions={demoTransactions}
-      />
+      {/* Chart of Accounts */}
+      <section id="accounting-accounts" className="space-y-4">
+        <h2 className="text-xl font-semibold">Chart of Accounts</h2>
+
+        <AccountForm accounts={accounts} />
+
+        <AccountTable accounts={accounts} />
+      </section>
+
+      {/* Journal Entries */}
+      <section id="accounting-journal" className="space-y-4">
+        <h2 className="text-xl font-semibold">Journal Entries</h2>
+
+        <JournalEntryForm accounts={accounts} />
+
+        <JournalEntryTable
+          entries={journalEntries}
+          onPost={(id) => post.mutate(id)}
+        />
+      </section>
+
+      {/* General Ledger */}
+      <section id="accounting-ledger" className="space-y-4">
+        <h2 className="text-xl font-semibold">General Ledger</h2>
+
+        <GeneralLedgerTable entries={ledger} />
+      </section>
     </div>
   );
 }
