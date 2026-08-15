@@ -36,6 +36,11 @@ const menuItems = [
     permission: permissions.ACCOUNTING_VIEW,
   },
   {
+    name: "Reconciliation",
+    path: "/reconciliation",
+    permission: permissions.RECONCILIATION_VIEW,
+  },
+  {
     name: "Payments",
     path: "/payments",
     permission: permissions.PAYMENTS_VIEW,

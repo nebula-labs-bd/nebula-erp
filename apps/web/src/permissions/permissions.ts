@@ -14,6 +14,8 @@ export const permissions = {
 
   ACCOUNTING_VIEW: "accounting:view",
 
+  RECONCILIATION_VIEW: "reconciliation:view",
+
   PAYMENTS_VIEW: "payments:view",
 
   CONTACTS_VIEW: "contacts:view",

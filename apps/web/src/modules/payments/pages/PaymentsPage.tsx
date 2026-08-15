@@ -4,6 +4,7 @@ import PaymentForm from "../components/PaymentForm";
 import PaymentTable from "../components/PaymentTable";
 import SupplierPayableTable from "../components/SupplierPayableTable";
 import CustomerReceivableTable from "../components/CustomerReceivableTable";
+import PaymentChannelsPage from "../channels/pages/PaymentChannelsPage";
 
 import { usePayments } from "../hooks/usePayments";
 import { usePurchaseOrders } from "../../purchase/hooks/usePurchaseOrder";
@@ -177,6 +178,11 @@ export default function PaymentsPage() {
         />
 
         <PaymentAllocationTable payments={payments} />
+      </section>
+
+      {/* Payment Channels & Settlement */}
+      <section id="payments-channels" className="space-y-4">
+        <PaymentChannelsPage />
       </section>
 
       {/* Supplier Payables */}

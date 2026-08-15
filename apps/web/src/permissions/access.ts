@@ -24,6 +24,8 @@ export const rolePermissions: Record<
 
     permissions.ACCOUNTING_VIEW,
 
+    permissions.RECONCILIATION_VIEW,
+
     permissions.PAYMENTS_VIEW,
 
     permissions.CONTACTS_VIEW,
