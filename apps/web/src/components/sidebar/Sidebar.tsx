@@ -41,6 +41,11 @@ const menuItems = [
     permission: permissions.PAYMENTS_VIEW,
   },
   {
+    name: "Contacts",
+    path: "/contacts",
+    permission: permissions.CONTACTS_VIEW,
+  },
+  {
     name: "Reports",
     path: "/reports",
     permission: permissions.REPORTS_VIEW,
