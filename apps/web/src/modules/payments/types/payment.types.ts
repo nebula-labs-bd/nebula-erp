@@ -54,3 +54,47 @@ export interface CustomerReceivable {
   dueAmount: number;
   status: PayableStatus;
 }
+
+/* ---------------------------------------------------------------- */
+/* Payment Allocation                                               */
+/* ---------------------------------------------------------------- */
+
+export type AllocationDocumentType =
+  | "sales_invoice"
+  | "purchase_invoice";
+
+export interface PaymentAllocation {
+  id: string;
+  paymentId: string;
+  documentId: string;
+  documentType: AllocationDocumentType;
+  documentNumber: string;
+  documentDate: string;
+  documentTotal: number;
+  allocatedAmount: number;
+  createdAt: string;
+}
+
+export interface CreatePaymentAllocationInput {
+  paymentId: string;
+  documentId: string;
+  documentType: AllocationDocumentType;
+  documentNumber: string;
+  documentDate: string;
+  documentTotal: number;
+  allocatedAmount: number;
+}
+
+/* ---------------------------------------------------------------- */
+/* Outstanding Document (for allocation UI / FIFO engine)           */
+/* ---------------------------------------------------------------- */
+
+export interface OutstandingDocument {
+  documentId: string;
+  documentType: AllocationDocumentType;
+  documentNumber: string;
+  date: string;
+  total: number;
+  paid: number;
+  due: number;
+}

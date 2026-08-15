@@ -3,6 +3,7 @@ import { useState } from "react";
 import ContactForm from "../components/ContactForm";
 import ContactTable from "../components/ContactTable";
 import ContactLedgerTable from "../components/ContactLedgerTable";
+import ContactBalance from "../components/ContactBalance";
 
 import { useContacts } from "../hooks/useContacts";
 import { useContactLedger } from "../hooks/useContacts";
@@ -60,6 +61,8 @@ export default function ContactsPage() {
             </span>
           )}
         </h2>
+
+        {selectedContact && <ContactBalance contact={selectedContact} />}
 
         {!selectedContact ? (
           <div className="surface p-8 text-center text-[var(--nebula-text-secondary)]">

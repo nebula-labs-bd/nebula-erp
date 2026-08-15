@@ -6,7 +6,10 @@ import {
 
 import {
   createPayment,
+  createPaymentAllocation,
   deletePayment,
+  deletePaymentAllocation,
+  getPaymentAllocations,
   getPayments,
   updatePayment,
 } from "../services/payment.service";
@@ -16,8 +19,10 @@ import { paymentKeys } from "../queries/payment.keys";
 import { accountingKeys } from "../../accounting/queries/accounting.keys";
 
 import type {
+  CreatePaymentAllocationInput,
   CreatePaymentInput,
   Payment,
+  PaymentAllocation,
   UpdatePaymentInput,
 } from "../types/payment.types";
 
@@ -28,6 +33,17 @@ export function usePayments() {
       const response = await getPayments();
       return response.data;
     },
+  });
+}
+
+export function usePaymentAllocations(paymentId: string) {
+  return useQuery({
+    queryKey: paymentKeys.allocations(paymentId),
+    queryFn: async () => {
+      const response = await getPaymentAllocations(paymentId);
+      return response.data;
+    },
+    enabled: !!paymentId,
   });
 }
 
@@ -66,8 +82,50 @@ export function usePaymentMutation() {
   };
 }
 
+export function usePaymentAllocationMutation() {
+  const queryClient = useQueryClient();
+
+  const refresh = (paymentId: string) => {
+    queryClient.invalidateQueries({
+      queryKey: paymentKeys.allocations(paymentId),
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: paymentKeys.all,
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: accountingKeys.all,
+    });
+  };
+
+  const create = useMutation({
+    mutationFn: (data: CreatePaymentAllocationInput) =>
+      createPaymentAllocation(data),
+    onSuccess: (_result, variables) => refresh(variables.paymentId),
+  });
+
+  const remove = useMutation({
+    mutationFn: ({
+      paymentId,
+      allocationId,
+    }: {
+      paymentId: string;
+      allocationId: string;
+    }) => deletePaymentAllocation(paymentId, allocationId),
+    onSuccess: (_result, variables) => refresh(variables.paymentId),
+  });
+
+  return {
+    create,
+    remove,
+  };
+}
+
 export type {
+  CreatePaymentAllocationInput,
   CreatePaymentInput,
   Payment,
+  PaymentAllocation,
   UpdatePaymentInput,
 };

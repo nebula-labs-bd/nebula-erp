@@ -12,7 +12,9 @@ import type {
 
 import type {
   CreatePaymentInput,
+  CreatePaymentAllocationInput,
   Payment,
+  PaymentAllocation,
   UpdatePaymentInput,
 } from "../types/payment.types";
 
@@ -34,6 +36,39 @@ export function updatePayment(data: UpdatePaymentInput) {
 
 export function deletePayment(id: string) {
   return apiClient.post(`/payments/payments/${id}/delete`, {});
+}
+
+/* ---------------------------------------------------------------- */
+/* Payment Allocation                                                */
+/*                                                                   */
+/* Allocation tracks which invoice(s) a payment settles. It is a     */
+/* financial-only operation: it never touches inventory, stock or    */
+/* products.                                                         */
+/* ---------------------------------------------------------------- */
+
+export function getPaymentAllocations(paymentId: string) {
+  return apiClient.get<PaymentAllocation[]>(
+    `/payments/payments/${paymentId}/allocations`,
+  );
+}
+
+export function createPaymentAllocation(
+  data: CreatePaymentAllocationInput,
+) {
+  return apiClient.post<PaymentAllocation>(
+    `/payments/payments/${data.paymentId}/allocations`,
+    data,
+  );
+}
+
+export function deletePaymentAllocation(
+  paymentId: string,
+  allocationId: string,
+) {
+  return apiClient.post(
+    `/payments/payments/${paymentId}/allocations/${allocationId}/delete`,
+    {},
+  );
 }
 
 /* ---------------------------------------------------------------- */
