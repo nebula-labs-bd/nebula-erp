@@ -22,6 +22,10 @@ export const rolePermissions: Record<
 
     permissions.CRM_VIEW,
 
+    permissions.ACCOUNTING_VIEW,
+
+    permissions.PAYMENTS_VIEW,
+
     permissions.REPORTS_VIEW,
   ],
 

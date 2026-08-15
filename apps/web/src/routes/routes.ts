@@ -5,6 +5,7 @@ import PurchasePage from "../modules/purchase/pages/PurchasePage";
 import SalesPage from "../modules/sales/pages/SalesPage";
 import CRMPage from "../modules/crm/pages/CRMPage";
 import AccountingPage from "../modules/accounting/pages/AccountingPage";
+import PaymentsPage from "../modules/payments/pages/PaymentsPage";
 import SettingsPage from "../modules/settings/pages/SettingsPage";
 
 
@@ -32,6 +33,10 @@ export const routes = [
   {
     path: "/accounting",
     element: AccountingPage,
+  },
+  {
+    path: "/payments",
+    element: PaymentsPage,
   },
   {
     path: "/settings",

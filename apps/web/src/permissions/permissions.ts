@@ -14,6 +14,8 @@ export const permissions = {
 
   ACCOUNTING_VIEW: "accounting:view",
 
+  PAYMENTS_VIEW: "payments:view",
+
   REPORTS_VIEW: "reports:view",
 
   SETTINGS_MANAGE: "settings:manage",
