@@ -1,3 +1,4 @@
+import ThemeSelector from "../../../theme/ThemeSelector";
 import SettingsPanel from "../components/SettingsPanel";
 
 import type {
@@ -33,6 +34,8 @@ export default function SettingsPage() {
           Configure system preferences.
         </p>
       </div>
+
+      <ThemeSelector />
 
       <SettingsPanel
         settings={demoSettings}

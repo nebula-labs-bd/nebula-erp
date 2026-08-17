@@ -2,6 +2,15 @@
 
 @import "./styles/theme.css";
 
+/* Tailwind v4 theme tokens (replaces tailwind.config.js `fontFamily.sans`).
+   Exposes the `font-sans` utility and sets the default font family. */
+@theme {
+  --font-sans:
+    "Inter",
+    "system-ui",
+    sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,4 +30,18 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+  color: var(--nebula-text-primary);
+  /* Font rendering optimization */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ensure all form controls inherit the global font instead of
+   falling back to browser defaults. */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
 }
