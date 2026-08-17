@@ -24,6 +24,8 @@ export const permissions = {
 
   ASSETS_VIEW: "assets:view",
 
+  TAX_VIEW: "tax:view",
+
   REPORTS_VIEW: "reports:view",
 
   SETTINGS_MANAGE: "settings:manage",

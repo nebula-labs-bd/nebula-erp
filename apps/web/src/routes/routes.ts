@@ -10,6 +10,7 @@ import PaymentsPage from "../modules/payments/pages/PaymentsPage";
 import ContactsPage from "../modules/contacts/pages/ContactsPage";
 import ExpensesPage from "../modules/expenses/pages/ExpensesPage";
 import AssetsPage from "../modules/assets/pages/AssetsPage";
+import TaxPage from "../modules/tax/pages/TaxPage";
 import SettingsPage from "../modules/settings/pages/SettingsPage";
 
 
@@ -57,6 +58,10 @@ export const routes = [
   {
     path: "/assets",
     element: AssetsPage,
+  },
+  {
+    path: "/tax",
+    element: TaxPage,
   },
   {
     path: "/settings",

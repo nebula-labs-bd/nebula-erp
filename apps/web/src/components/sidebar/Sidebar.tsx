@@ -61,6 +61,11 @@ const menuItems = [
     permission: permissions.ASSETS_VIEW,
   },
   {
+    name: "Tax",
+    path: "/tax",
+    permission: permissions.TAX_VIEW,
+  },
+  {
     name: "Reports",
     path: "/reports",
     permission: permissions.REPORTS_VIEW,
