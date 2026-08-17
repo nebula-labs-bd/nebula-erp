@@ -20,6 +20,8 @@ export const permissions = {
 
   CONTACTS_VIEW: "contacts:view",
 
+  EXPENSES_VIEW: "expenses:view",
+
   REPORTS_VIEW: "reports:view",
 
   SETTINGS_MANAGE: "settings:manage",

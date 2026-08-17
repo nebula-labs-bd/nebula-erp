@@ -30,6 +30,8 @@ export const rolePermissions: Record<
 
     permissions.CONTACTS_VIEW,
 
+    permissions.EXPENSES_VIEW,
+
     permissions.REPORTS_VIEW,
   ],
 

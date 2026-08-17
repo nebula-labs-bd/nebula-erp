@@ -8,6 +8,7 @@ import AccountingPage from "../modules/accounting/pages/AccountingPage";
 import ReconciliationPage from "../modules/reconciliation/pages/ReconciliationPage";
 import PaymentsPage from "../modules/payments/pages/PaymentsPage";
 import ContactsPage from "../modules/contacts/pages/ContactsPage";
+import ExpensesPage from "../modules/expenses/pages/ExpensesPage";
 import SettingsPage from "../modules/settings/pages/SettingsPage";
 
 
@@ -47,6 +48,10 @@ export const routes = [
   {
     path: "/contacts",
     element: ContactsPage,
+  },
+  {
+    path: "/expenses",
+    element: ExpensesPage,
   },
   {
     path: "/settings",
