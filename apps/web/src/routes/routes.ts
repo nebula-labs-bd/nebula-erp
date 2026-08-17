@@ -12,6 +12,7 @@ import ExpensesPage from "../modules/expenses/pages/ExpensesPage";
 import AssetsPage from "../modules/assets/pages/AssetsPage";
 import TaxPage from "../modules/tax/pages/TaxPage";
 import SettingsPage from "../modules/settings/pages/SettingsPage";
+import ReportsPage from "../modules/reports/pages/ReportsPage";
 
 
 export const routes = [
@@ -66,5 +67,9 @@ export const routes = [
   {
     path: "/settings",
     element: SettingsPage,
+  },
+  {
+    path: "/reports",
+    element: ReportsPage,
   },
 ];
