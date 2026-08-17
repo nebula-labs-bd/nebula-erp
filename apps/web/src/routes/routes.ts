@@ -1,4 +1,4 @@
-import Dashboard from "../pages/Dashboard";
+import { DashboardPage } from "../modules/dashboard";
 
 import InventoryPage from "../modules/inventory/pages/InventoryPage";
 import PurchasePage from "../modules/purchase/pages/PurchasePage";
@@ -18,7 +18,7 @@ import ReportsPage from "../modules/reports/pages/ReportsPage";
 export const routes = [
   {
     path: "/dashboard",
-    element: Dashboard,
+    element: DashboardPage,
   },
   {
     path: "/inventory",
