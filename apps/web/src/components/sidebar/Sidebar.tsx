@@ -2,6 +2,8 @@ import { NavLink } from "react-router-dom";
 
 import usePermission from "../../hooks/usePermission";
 
+import SidebarThemeSwitcher from "./SidebarThemeSwitcher";
+
 import { permissions } from "../../permissions/permissions";
 
 const menuItems = [
@@ -81,7 +83,7 @@ export default function Sidebar() {
   const { can } = usePermission();
 
   return (
-    <aside className="w-64 border-r border-[var(--nebula-border)] bg-[var(--nebula-surface)] p-4">
+    <aside className="flex w-64 flex-col border-r border-[var(--nebula-border)] bg-[var(--nebula-surface)] p-4">
       <div className="mb-8">
         <h1 className="text-xl font-bold">
           Nebula ERP
@@ -92,7 +94,7 @@ export default function Sidebar() {
         </p>
       </div>
 
-      <nav className="space-y-1">
+      <nav className="flex-1 space-y-1">
         {menuItems
           .filter((item) =>
             can(item.permission),
@@ -113,6 +115,10 @@ export default function Sidebar() {
             </NavLink>
           ))}
       </nav>
+
+      <footer className="mt-4 border-t border-[var(--nebula-border)] pt-4">
+        <SidebarThemeSwitcher />
+      </footer>
     </aside>
   );
 }

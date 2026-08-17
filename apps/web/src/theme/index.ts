@@ -1,6 +1,7 @@
 export { default as ThemeProvider } from "./ThemeProvider";
 export { useTheme } from "./useTheme";
 export { default as ThemeSelector } from "./ThemeSelector";
+export { default as ThemeOptions } from "./ThemeOptions";
 export {
   themes,
   themeList,
