@@ -73,6 +73,11 @@ const menuItems = [
     permission: permissions.REPORTS_VIEW,
   },
   {
+    name: "POS",
+    path: "/pos",
+    permission: permissions.POS_VIEW,
+  },
+  {
     name: "Settings",
     path: "/settings",
     permission: permissions.SETTINGS_MANAGE,

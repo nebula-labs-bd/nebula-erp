@@ -35,6 +35,8 @@ export const rolePermissions: Record<
     permissions.ASSETS_VIEW,
 
     permissions.REPORTS_VIEW,
+
+    permissions.POS_VIEW,
   ],
 
   [roles.STAFF]: [
@@ -46,6 +48,8 @@ export const rolePermissions: Record<
     permissions.SALES_CREATE,
 
     permissions.CRM_VIEW,
+
+    permissions.POS_VIEW,
   ],
 
   [roles.VIEWER]: [
