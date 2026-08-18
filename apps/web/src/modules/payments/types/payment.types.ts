@@ -1,6 +1,13 @@
 export type PaymentType = "payable" | "receivable";
 
-export type PaymentMethod = "cash" | "bank" | "card" | "mobile";
+export type PaymentMethod =
+  | "cash"
+  | "bank"
+  | "card"
+  | "mobile"
+  | "bkash"
+  | "nagad"
+  | "other";
 
 export type PaymentStatus = "pending" | "completed" | "cancelled";
 

@@ -6,8 +6,17 @@ import POSProductSearch from "../components/POSProductSearch";
 import POSCart from "../components/POSCart";
 import POSCustomerSelect from "../components/POSCustomerSelect";
 import POSCheckout from "../components/POSCheckout";
+import POSPaymentPanel from "../components/POSPaymentPanel";
+import POSReceipt from "../components/POSReceipt";
+
+import { createPOSTransaction } from "../services/pos.service";
 
 import type { POSCustomer } from "../types/pos.types";
+import type { POSPayment } from "../types/transaction.types";
+import type { POSTransactionResult } from "../services/pos.service";
+
+/** Stage of the checkout flow shown in the right-hand column. */
+type POSStage = "checkout" | "payment" | "receipt";
 
 /**
  * POS workspace.
@@ -15,15 +24,19 @@ import type { POSCustomer } from "../types/pos.types";
  * Professional cashier layout:
  *   ┌──────────────┬──────────────┐
  *   │ Product      │ Cart         │
- *   │ Search       │              │
- *   │ (left)       │ (right)      │
+ *   │ Search       │ (right)      │
  *   ├──────────────┴──────────────┤
  *   │ Customer  +  Checkout       │  (bottom)
  *   └─────────────────────────────┘
  *
+ * The checkout now drives a *real* sale:
+ *
+ *   Cart → Checkout → Payment Panel → Confirm → Sales + Payments (→ Accounting)
+ *
  * Cart state is owned by `usePOSCart` (frontend-only). Products and customers
  * are sourced from the Inventory and Sales modules respectively — POS never
- * duplicates that logic.
+ * duplicates that logic. The sale + payment are created through the existing
+ * Sales and Payment services (the sources of truth).
  */
 export default function POSPage() {
   const {
@@ -35,6 +48,11 @@ export default function POSPage() {
   } = usePOSCart();
 
   const [customer, setCustomer] = useState<POSCustomer | null>(null);
+
+  const [stage, setStage] = useState<POSStage>("checkout");
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<POSTransactionResult | null>(null);
 
   function handleAdd(product: POSProductInput) {
     addProduct(product);
@@ -56,6 +74,41 @@ export default function POSPage() {
     }
   }
 
+  function handleCompleteSale() {
+    setError(null);
+    setStage("payment");
+  }
+
+  async function handleConfirmPayment(payments: POSPayment[]) {
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const created = await createPOSTransaction(cart, customer, payments);
+
+      setResult(created);
+      setStage("receipt");
+      clearCart();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create sale.",
+      );
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  function handleCancelPayment() {
+    setError(null);
+    setStage("checkout");
+  }
+
+  function handleNewSale() {
+    setResult(null);
+    setError(null);
+    setStage("checkout");
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -64,8 +117,8 @@ export default function POSPage() {
         </h1>
 
         <p className="mt-2 text-[var(--nebula-text-secondary)]">
-          Tap products to build a sale. Complete the transaction in the Sales
-          module — your single source of truth for orders.
+          Tap products to build a sale, collect payment, and post the
+          transaction to Sales and Accounting.
         </p>
       </div>
 
@@ -90,20 +143,48 @@ export default function POSPage() {
         </section>
       </div>
 
-      {/* Bottom: customer select + checkout summary */}
+      {/* Bottom: customer select + checkout / payment / receipt */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <section className="lg:col-span-3">
           <POSCustomerSelect
             value={customer}
-            onChange={setCustomer}
+            onChange={(next) => {
+              setCustomer(next);
+              setError(null);
+            }}
           />
         </section>
 
         <section className="lg:col-span-2">
-          <POSCheckout
-            cart={cart}
-            customer={customer}
-          />
+          <div className="h-[420px]">
+            {stage === "checkout" && (
+              <POSCheckout
+                cart={cart}
+                customer={customer}
+                onCompleteSale={handleCompleteSale}
+              />
+            )}
+
+            {stage === "payment" && (
+              <POSPaymentPanel
+                cart={cart}
+                customer={customer}
+                onConfirm={handleConfirmPayment}
+                onCancel={handleCancelPayment}
+                processing={processing}
+                error={error}
+              />
+            )}
+
+            {stage === "receipt" && result && (
+              <POSReceipt
+                result={result}
+                cart={cart}
+                customer={customer}
+                onClose={handleNewSale}
+              />
+            )}
+          </div>
         </section>
       </div>
     </div>

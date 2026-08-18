@@ -1,6 +1,4 @@
-import { useNavigate } from "react-router-dom";
-
-import { Receipt } from "lucide-react";
+import { Receipt, CreditCard } from "lucide-react";
 
 import { formatCurrency } from "../../dashboard/utils/format";
 
@@ -13,29 +11,29 @@ type POSCheckoutProps = {
 
   /** Disabled state (e.g. empty cart). */
   disabled?: boolean;
+
+  /** Open the payment panel (hand-off to the Payment step). */
+  onCompleteSale: () => void;
 };
 
 /**
  * Checkout summary for the POS workspace.
  *
- * Foundation only: this renders the running totals and a "Complete Sale"
- * action. The button performs *navigation only* — it hands the transaction
- * off to the Sales module (the source of truth) at `/sales`. No sale mutation
- * is created here so Sales logic is never duplicated.
+ * This is the first step of the real checkout flow:
+ *
+ *   Complete Sale → Open Payment Panel → Confirm Payment → Create Transaction
+ *
+ * The "Complete Sale" button no longer navigates away. It opens the payment
+ * panel orchestrated by the parent, which then creates the sale via the Sales
+ * module (source of truth) and posts payments through the Payment module.
  */
 export default function POSCheckout({
   cart,
   customer,
   disabled = false,
+  onCompleteSale,
 }: POSCheckoutProps) {
-  const navigate = useNavigate();
-
   const hasItems = cart.items.length > 0;
-
-  function handleCompleteSale() {
-    // Navigation only. The actual sale creation belongs to the Sales module.
-    navigate("/sales");
-  }
 
   return (
     <div className="surface p-4">
@@ -101,10 +99,10 @@ export default function POSCheckout({
       <button
         type="button"
         disabled={disabled || !hasItems}
-        onClick={handleCompleteSale}
-        className="mt-4 w-full rounded-lg bg-[var(--nebula-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--nebula-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={onCompleteSale}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--nebula-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--nebula-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Complete Sale
+        <CreditCard size={16} /> Complete Sale
       </button>
     </div>
   );
