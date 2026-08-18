@@ -65,16 +65,41 @@ export interface POSTransactionItem {
 export interface POSTransaction {
   customerId: string;
 
+  /** Warehouse the goods are fulfilled from. Required for the delivery +
+   * stock-movement step so inventory can be reduced through the proper
+   * Sales → Delivery → Stock Movement flow (POS never touches inventory directly). */
+  warehouseId: string;
+
   items: POSTransactionItem[];
 
   subtotal: number;
 
   discount: number;
 
-  tax: number;
-
   total: number;
+
+  tax: number;
 
   /** "paid" when the sum of tenders covers the total, else "due". */
   paymentStatus: "paid" | "due";
 }
+
+/* ---------------------------------------------------------------- */
+/* Stock movement status                                            */
+/* ---------------------------------------------------------------- */
+
+/** Status of the downstream inventory flow for a POS sale.
+ *
+ * - `pending`  — delivery/stock movement not yet created.
+ * - `completed`— delivery created and full stock-out movements posted.
+ * - `partial`  — delivery created but only some lines' stock was reduced
+ *                (e.g. partial fulfilment).
+ * - `failed`   — sale + payment recorded, but the delivery/stock step could
+ *                not be completed. The recorded sale remains the source of
+ *                truth and must be fulfilled manually.
+ */
+export type StockMovementStatus =
+  | "pending"
+  | "completed"
+  | "partial"
+  | "failed";

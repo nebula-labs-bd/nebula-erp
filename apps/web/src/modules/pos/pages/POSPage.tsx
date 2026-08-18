@@ -11,6 +11,8 @@ import POSReceipt from "../components/POSReceipt";
 
 import { createPOSTransaction } from "../services/pos.service";
 
+import { useWarehouses } from "../../inventory/hooks/useWarehouse";
+
 import type { POSCustomer } from "../types/pos.types";
 import type { POSPayment } from "../types/transaction.types";
 import type { POSTransactionResult } from "../services/pos.service";
@@ -26,17 +28,19 @@ type POSStage = "checkout" | "payment" | "receipt";
  *   │ Product      │ Cart         │
  *   │ Search       │ (right)      │
  *   ├──────────────┴──────────────┤
- *   │ Customer  +  Checkout       │  (bottom)
+ *   │ Customer + Warehouse + Checkout │  (bottom)
  *   └─────────────────────────────┘
  *
  * The checkout now drives a *real* sale:
  *
- *   Cart → Checkout → Payment Panel → Confirm → Sales + Payments (→ Accounting)
+ *   Cart → Warehouse → Checkout → Payment → Confirm →
+ *     Sales + Payments (→ Accounting) → Delivery → Stock Movement → Inventory
  *
- * Cart state is owned by `usePOSCart` (frontend-only). Products and customers
- * are sourced from the Inventory and Sales modules respectively — POS never
- * duplicates that logic. The sale + payment are created through the existing
- * Sales and Payment services (the sources of truth).
+ * Cart state is owned by `usePOSCart` (frontend-only). Products, customers and
+ * warehouses are sourced from the Inventory and Sales modules respectively —
+ * POS never duplicates that logic. The sale + payment + delivery + stock are
+ * created through the existing Sales/Payment/Inventory services (sources of
+ * truth); POS only orchestrates them.
  */
 export default function POSPage() {
   const {
@@ -47,7 +51,10 @@ export default function POSPage() {
     clearCart,
   } = usePOSCart();
 
+  const { data: warehouses = [] } = useWarehouses();
+
   const [customer, setCustomer] = useState<POSCustomer | null>(null);
+  const [warehouseId, setWarehouseId] = useState<string>("");
 
   const [stage, setStage] = useState<POSStage>("checkout");
   const [processing, setProcessing] = useState(false);
@@ -84,7 +91,12 @@ export default function POSPage() {
     setError(null);
 
     try {
-      const created = await createPOSTransaction(cart, customer, payments);
+      const created = await createPOSTransaction(
+        cart,
+        customer,
+        payments,
+        warehouseId,
+      );
 
       setResult(created);
       setStage("receipt");
@@ -161,6 +173,12 @@ export default function POSPage() {
               <POSCheckout
                 cart={cart}
                 customer={customer}
+                warehouseId={warehouseId}
+                warehouses={warehouses}
+                onWarehouseChange={(next) => {
+                  setWarehouseId(next);
+                  setError(null);
+                }}
                 onCompleteSale={handleCompleteSale}
               />
             )}

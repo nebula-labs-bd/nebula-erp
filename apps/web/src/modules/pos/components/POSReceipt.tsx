@@ -78,6 +78,15 @@ export default function POSReceipt({
             {customer?.name ?? "Walk-in"}
           </dd>
         </div>
+
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Delivery</dt>
+          <dd className="max-w-[60%] truncate text-right font-medium text-[var(--nebula-text-primary)]">
+            {result.deliveryId
+              ? result.deliveryId
+              : "—"}
+          </dd>
+        </div>
       </dl>
 
       {/* Items */}
@@ -134,6 +143,37 @@ export default function POSReceipt({
           </dd>
         </div>
       </dl>
+
+      {/* Fulfilment status: payment + stock movement */}
+      <div className="space-y-1 border-t border-[var(--nebula-border)] py-3 text-sm">
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Payment</dt>
+          <dd className="font-medium text-[var(--nebula-success)]">
+            Completed
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Stock</dt>
+          <dd
+            className={
+              result.stockMovementStatus === "completed"
+                ? "font-medium capitalize text-[var(--nebula-success)]"
+                : result.stockMovementStatus === "failed"
+                  ? "font-medium capitalize text-[var(--nebula-danger)]"
+                  : "font-medium capitalize text-[var(--nebula-text-secondary)]"
+            }
+          >
+            {result.stockMovementStatus}
+          </dd>
+        </div>
+      </div>
+
+      {result.warning && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800">
+          {result.warning}
+        </div>
+      )}
 
       {/* Payment methods */}
       <div className="border-t border-[var(--nebula-border)] pt-3">
