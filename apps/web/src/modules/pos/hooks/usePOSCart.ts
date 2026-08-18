@@ -14,6 +14,10 @@ export interface POSProductInput {
 
   sku: string;
 
+  /** Optional barcode mirrored from the Product Master so a scanned product is
+   * identifiable in the cart / receipt. POS never creates or stores products. */
+  barcode?: string;
+
   sellingPrice: number;
 
   /** Optional tax rate (percentage). Defaults to 0 when absent. */
@@ -49,6 +53,8 @@ function toCartItem(product: POSProductInput): CartItem {
     name: product.name,
 
     sku: product.sku,
+
+    barcode: product.barcode,
 
     quantity,
 

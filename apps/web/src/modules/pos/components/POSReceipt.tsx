@@ -4,34 +4,68 @@ import { formatCurrency } from "../../dashboard/utils/format";
 
 import type { Cart, POSCustomer } from "../types/pos.types";
 import type { POSTransactionResult } from "../services/pos.service";
+import type { POSShift } from "../shift/types/shift.types";
 
 type POSReceiptProps = {
   result: POSTransactionResult;
   cart: Cart;
   customer: POSCustomer | null;
   onClose: () => void;
+
+  /** Cashier display name (from the active user / shift). */
+  cashierName?: string;
+
+  /** Active shift the sale belongs to (POS register metadata). */
+  shift?: POSShift | null;
+
+  /** Human-readable receipt number. Falls back to the sales order number. */
+  receiptNumber?: string;
+
+  /** Business details for the receipt header. */
+  businessName?: string;
+  businessAddress?: string;
 };
 
 /**
  * POS receipt foundation.
  *
- * Renders a read-only sale summary: business name, invoice number, date,
- * customer, line items, totals and the payment methods used. No printer
- * integration yet — the `Printer` action is a placeholder for a future print
- * step.
+ * Renders a professional, print-ready sale summary:
+ *   - Business information (name + address)
+ *   - Receipt number + date/time
+ *   - Cashier + shift reference (POS register metadata)
+ *   - Customer
+ *   - Line items
+ *   - Payment methods
+ *   - Totals + fulfilment status
+ *
+ * No hardware integration yet — the `Printer` action triggers the browser print
+ * dialog (`window.print()`), which is the foundation for the thermal / 80mm
+ * print step implemented in `POSPrintReceipt`.
  */
 export default function POSReceipt({
   result,
   cart,
   customer,
   onClose,
+  cashierName,
+  shift,
+  receiptNumber,
+  businessName = "Nebula ERP",
+  businessAddress = "123 Galaxy Road, Dhaka, Bangladesh",
 }: POSReceiptProps) {
   const { salesOrder, payments } = result;
 
-  const date = new Date().toLocaleString("en-US", {
+  const issuedAt = new Date();
+
+  const date = issuedAt.toLocaleDateString("en-US", {
     dateStyle: "medium",
+  });
+
+  const time = issuedAt.toLocaleTimeString("en-US", {
     timeStyle: "short",
   });
+
+  const receipt = receiptNumber ?? salesOrder.orderNumber;
 
   return (
     <div className="surface flex h-full flex-col p-4">
@@ -52,14 +86,24 @@ export default function POSReceipt({
       {/* Business + invoice header */}
       <div className="border-b border-[var(--nebula-border)] pb-3 text-center">
         <p className="text-base font-bold text-[var(--nebula-text-primary)]">
-          Nebula ERP
+          {businessName}
         </p>
         <p className="text-xs text-[var(--nebula-text-muted)]">
+          {businessAddress}
+        </p>
+        <p className="mt-1 text-xs text-[var(--nebula-text-muted)]">
           Point of Sale Receipt
         </p>
       </div>
 
       <dl className="space-y-1 py-3 text-sm">
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Receipt #</dt>
+          <dd className="font-medium text-[var(--nebula-text-primary)]">
+            {receipt}
+          </dd>
+        </div>
+
         <div className="flex items-center justify-between">
           <dt className="text-[var(--nebula-text-secondary)]">Invoice #</dt>
           <dd className="font-medium text-[var(--nebula-text-primary)]">
@@ -71,6 +115,27 @@ export default function POSReceipt({
           <dt className="text-[var(--nebula-text-secondary)]">Date</dt>
           <dd className="text-[var(--nebula-text-primary)]">{date}</dd>
         </div>
+
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Time</dt>
+          <dd className="text-[var(--nebula-text-primary)]">{time}</dd>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Cashier</dt>
+          <dd className="truncate text-[var(--nebula-text-primary)]">
+            {cashierName ?? shift?.cashierName ?? "—"}
+          </dd>
+        </div>
+
+        {shift && (
+          <div className="flex items-center justify-between">
+            <dt className="text-[var(--nebula-text-secondary)]">Shift</dt>
+            <dd className="truncate text-[var(--nebula-text-primary)]">
+              {shift.cashierName} · {shift.id.slice(0, 8)}
+            </dd>
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <dt className="text-[var(--nebula-text-secondary)]">Customer</dt>
@@ -101,6 +166,8 @@ export default function POSReceipt({
                 {item.name}
               </div>
               <div className="text-xs text-[var(--nebula-text-muted)]">
+                {item.sku}
+                {item.barcode ? ` · ${item.barcode}` : ""} ·{" "}
                 {item.quantity} × {formatCurrency(item.unitPrice)}
               </div>
             </div>

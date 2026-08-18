@@ -19,6 +19,10 @@ export interface CartItem {
 
   sku: string;
 
+  /** Optional barcode carried from the Product Master for receipt display.
+   * POS never owns barcode data — it mirrors the inventory source of truth. */
+  barcode?: string;
+
   quantity: number;
 
   /** Per-unit selling price. */

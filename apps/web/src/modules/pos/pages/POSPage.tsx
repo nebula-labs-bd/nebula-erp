@@ -8,6 +8,7 @@ import POSCustomerSelect from "../components/POSCustomerSelect";
 import POSCheckout from "../components/POSCheckout";
 import POSPaymentPanel from "../components/POSPaymentPanel";
 import POSReceipt from "../components/POSReceipt";
+import POSPrintReceipt from "../components/POSPrintReceipt";
 
 import { createPOSTransaction } from "../services/pos.service";
 
@@ -263,12 +264,30 @@ export default function POSPage() {
             )}
 
             {stage === "receipt" && result && (
-              <POSReceipt
-                result={result}
-                cart={cart}
-                customer={customer}
-                onClose={handleNewSale}
-              />
+              <div className="flex h-[420px] flex-col gap-4 overflow-y-auto">
+                <POSReceipt
+                  result={result}
+                  cart={cart}
+                  customer={customer}
+                  shift={shift}
+                  cashierName={me?.data?.name}
+                  receiptNumber={result.salesOrder.orderNumber}
+                  onClose={handleNewSale}
+                />
+
+                {/* Thermal / 80mm print step — replaces the page-wide
+                    window.print() with a dedicated thermal receipt in a
+                    hidden iframe. Mounts and auto-triggers the print dialog. */}
+                <POSPrintReceipt
+                  result={result}
+                  cart={cart}
+                  customer={customer}
+                  shift={shift}
+                  cashierName={me?.data?.name}
+                  receiptNumber={result.salesOrder.orderNumber}
+                  onClose={handleNewSale}
+                />
+              </div>
             )}
           </div>
         </section>
