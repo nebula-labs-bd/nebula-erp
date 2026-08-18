@@ -70,6 +70,11 @@ export interface POSTransaction {
    * Sales → Delivery → Stock Movement flow (POS never touches inventory directly). */
   warehouseId: string;
 
+  /** Id of the cashier shift this sale belongs to, used by POS register
+   * reporting only. It is carried as POS operational metadata and is never
+   * used to mutate accounting or inventory. */
+  shiftId?: string;
+
   items: POSTransactionItem[];
 
   subtotal: number;

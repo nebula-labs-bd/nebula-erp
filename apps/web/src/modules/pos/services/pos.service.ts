@@ -64,6 +64,7 @@ export function cartToTransaction(
   cart: Cart,
   customer: POSCustomer | null,
   warehouseId: string,
+  shiftId?: string,
 ): POSTransaction {
   const items: POSTransactionItem[] = cart.items.map((item) => ({
     productId: item.productId,
@@ -83,6 +84,7 @@ export function cartToTransaction(
     tax: cart.tax,
     total: cart.total,
     paymentStatus: "paid",
+    shiftId,
   };
 }
 
@@ -241,6 +243,10 @@ export interface POSTransactionResult {
    * When set, the recorded sale + payment remain the source of truth and the
    * warehouse fulfilment must be completed manually. */
   warning?: string;
+
+  /** Id of the cashier shift this sale was recorded against (POS register
+   * metadata only). */
+  shiftId?: string;
 }
 
 /**
@@ -266,6 +272,7 @@ export async function createPOSTransaction(
   customer: POSCustomer | null,
   payments: POSPayment[],
   warehouseId: string,
+  shiftId?: string,
 ): Promise<POSTransactionResult> {
   const validation = validatePOSTransaction(
     cart,
@@ -281,7 +288,7 @@ export async function createPOSTransaction(
   // `customer` is guaranteed non-null after validation.
   const safeCustomer = customer as POSCustomer;
 
-  const transaction = cartToTransaction(cart, safeCustomer, warehouseId);
+  const transaction = cartToTransaction(cart, safeCustomer, warehouseId, shiftId);
 
   const orderResponse = await createSalesOrder(
     toSalesOrderInput(transaction),
@@ -336,5 +343,6 @@ export async function createPOSTransaction(
     deliveryId,
     stockMovementStatus,
     warning,
+    shiftId,
   };
 }

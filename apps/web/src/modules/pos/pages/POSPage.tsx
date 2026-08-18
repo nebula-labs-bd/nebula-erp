@@ -12,6 +12,12 @@ import POSReceipt from "../components/POSReceipt";
 import { createPOSTransaction } from "../services/pos.service";
 
 import { useWarehouses } from "../../inventory/hooks/useWarehouse";
+import useCurrentUser from "../../../hooks/useCurrentUser";
+
+import { useCurrentShift, useShiftMutation } from "../shift/hooks/useShift";
+import POSOpenShift from "../shift/components/POSOpenShift";
+import POSShiftPanel from "../shift/components/POSShiftPanel";
+import POSCloseShift from "../shift/components/POSCloseShift";
 
 import type { POSCustomer } from "../types/pos.types";
 import type { POSPayment } from "../types/transaction.types";
@@ -53,6 +59,14 @@ export default function POSPage() {
 
   const { data: warehouses = [] } = useWarehouses();
 
+  const { data: me } = useCurrentUser();
+
+  const { data: shiftData, isLoading: shiftLoading } = useCurrentShift();
+
+  const { addMovement } = useShiftMutation();
+
+  const shift = shiftData?.shift ?? null;
+
   const [customer, setCustomer] = useState<POSCustomer | null>(null);
   const [warehouseId, setWarehouseId] = useState<string>("");
 
@@ -60,6 +74,8 @@ export default function POSPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<POSTransactionResult | null>(null);
+
+  const [closing, setClosing] = useState(false);
 
   function handleAdd(product: POSProductInput) {
     addProduct(product);
@@ -96,7 +112,26 @@ export default function POSPage() {
         customer,
         payments,
         warehouseId,
+        shift?.id,
       );
+
+      // Record the cash sale against the open shift so expected cash stays in
+      // sync. Best-effort: a failure here must never void the completed sale.
+      if (shift) {
+        try {
+          await addMovement.mutateAsync({
+            shiftId: shift.id,
+            input: {
+              type: "sale",
+              amount: created.transaction.total,
+              description: `POS sale ${created.salesOrder.orderNumber}`,
+            },
+          });
+        } catch {
+          // Non-fatal for the sale itself; the shift can be reconciled from
+          // the POS sale record on close.
+        }
+      }
 
       setResult(created);
       setStage("receipt");
@@ -121,6 +156,30 @@ export default function POSPage() {
     setStage("checkout");
   }
 
+  // Before a shift is open, the cashier must open the register.
+  if (!shiftLoading && !shift) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--nebula-text-primary)]">
+            Point of Sale
+          </h1>
+
+          <p className="mt-2 text-[var(--nebula-text-secondary)]">
+            Open the cash register to begin selling.
+          </p>
+        </div>
+
+        <POSOpenShift
+          cashierName={me?.data?.name ?? ""}
+          onOpened={() => {
+            // `useCurrentShift` refetches via its invalidation on open.
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -133,6 +192,15 @@ export default function POSPage() {
           transaction to Sales and Accounting.
         </p>
       </div>
+
+      {/* Active shift banner */}
+      {shift && (
+        <POSShiftPanel
+          shift={shift}
+          movements={shiftData?.movements ?? []}
+          onCloseShift={() => setClosing(true)}
+        />
+      )}
 
       {/* Main workspace: search (left) + cart (right) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
@@ -205,6 +273,23 @@ export default function POSPage() {
           </div>
         </section>
       </div>
+
+      {/* Close-shift reconciliation overlay */}
+      {closing && shift && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md">
+            <POSCloseShift
+              shift={shift}
+              movements={shiftData?.movements ?? []}
+              onClosed={() => {
+                setClosing(false);
+                handleNewSale();
+              }}
+              onCancel={() => setClosing(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
