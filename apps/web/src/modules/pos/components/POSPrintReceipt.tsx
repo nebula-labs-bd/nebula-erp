@@ -17,6 +17,8 @@ interface ReceiptData {
   cashierName?: string;
   shift?: POSShift | null;
   customer: POSCustomer | null;
+  pointsEarned?: number;
+  loyaltyDiscount?: number;
   cart: Cart;
   result: POSTransactionResult;
   payments: POSTransactionResult["payments"];
@@ -33,6 +35,8 @@ function buildReceiptHtml(data: ReceiptData): string {
     cashierName,
     shift,
     customer,
+    pointsEarned,
+    loyaltyDiscount = 0,
     cart,
     result,
     payments,
@@ -92,10 +96,14 @@ function buildReceiptHtml(data: ReceiptData): string {
     <span>Cashier</span>
     <span>${cashierName ?? shift?.cashierName ?? "—"}</span>
   </div>
-  ${shift ? `
   <div class="flex">
-    <span>Shift</span>
-    <span>${shift.cashierName} · ${shift.id.slice(0, 8)}</span>
+    <span>Shift #</span>
+    <span>${shift ? shift.id.slice(0, 8) : "—"}</span>
+  </div>
+  ${customer ? `
+  <div class="flex">
+    <span>Points Earned</span>
+    <span>${pointsEarned ?? 0} pts</span>
   </div>` : ""}
   <div class="flex">
     <span>Customer</span>
@@ -131,8 +139,8 @@ function buildReceiptHtml(data: ReceiptData): string {
     <span>${formatCurrency(cart.tax)}</span>
   </div>
   <div class="flex">
-    <span>Discount</span>
-    <span>${formatCurrency(cart.discount)}</span>
+    <span>Discount Applied</span>
+    <span>${formatCurrency(cart.discount + loyaltyDiscount)}</span>
   </div>
   <div class="flex bold" style="border-top: 1px dashed #000; padding-top: 4px;">
     <span>Total</span>
@@ -154,7 +162,7 @@ function buildReceiptHtml(data: ReceiptData): string {
 
   <div class="line"></div>
 
-  <div class="small" style="text-align: center; margin-top: 4px;">Paid via</div>
+  <div class="small" style="text-align: center; margin-top: 4px;">Payment Breakdown</div>
   ${payments
     .map(
       (payment) => `
@@ -164,6 +172,12 @@ function buildReceiptHtml(data: ReceiptData): string {
   </div>`,
     )
     .join("")}
+  <div class="flex bold" style="border-top: 1px dashed #000; padding-top: 4px;">
+    <span>Total</span>
+    <span>${formatCurrency(
+      payments.reduce((sum, p) => sum + p.amount, 0),
+    )}</span>
+  </div>
 
   <div class="line" style="margin-top: 12px;"></div>
   <div class="center small" style="margin-top: 8px;">
@@ -192,6 +206,12 @@ type POSPrintReceiptProps = {
 
   /** Human-readable receipt number. */
   receiptNumber?: string;
+
+  /** Loyalty points earned by the customer on this sale (display only). */
+  pointsEarned?: number;
+
+  /** Loyalty discount (currency) applied on this sale, if any. */
+  loyaltyDiscount?: number;
 
   /** Business details for the receipt header. */
   businessName?: string;
@@ -225,6 +245,8 @@ export default function POSPrintReceipt({
   cashierName,
   shift,
   receiptNumber,
+  pointsEarned,
+  loyaltyDiscount = 0,
   businessName = "Nebula ERP",
   businessAddress = "123 Galaxy Road, Dhaka, Bangladesh",
   onClose,
@@ -255,6 +277,8 @@ export default function POSPrintReceipt({
     cashierName,
     shift,
     customer,
+    pointsEarned,
+    loyaltyDiscount,
     cart,
     result,
     payments,

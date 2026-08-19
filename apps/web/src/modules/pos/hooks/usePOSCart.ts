@@ -195,6 +195,13 @@ export function usePOSCart() {
     setItems([]);
   }, []);
 
+  // Replace the entire cart contents (used by the discount calculator which
+  // returns a fully-recomputed set of lines). UI-state only — no business
+  // logic; downstream totals are still derived by `calculateTotals`.
+  const replaceCart = useCallback((next: CartItem[]) => {
+    setItems(next);
+  }, []);
+
   const cart = useMemo(
     () => calculateTotals(items),
     [items],
@@ -214,5 +221,7 @@ export function usePOSCart() {
     updateQuantity,
 
     clearCart,
+
+    replaceCart,
   };
 }

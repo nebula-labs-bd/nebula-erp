@@ -86,7 +86,7 @@ export default function POSOpenShift({
 
         {open.error && (
           <p className="mt-3 text-xs text-[var(--nebula-danger)]">
-            Could not open shift. Please try again.
+            {open.error.message || "Could not open shift. Please try again."}
           </p>
         )}
 

@@ -21,6 +21,12 @@ type POSReceiptProps = {
   /** Human-readable receipt number. Falls back to the sales order number. */
   receiptNumber?: string;
 
+  /** Loyalty points earned by the customer on this sale (display only). */
+  pointsEarned?: number;
+
+  /** Loyalty discount (currency) applied on this sale, if any. */
+  loyaltyDiscount?: number;
+
   /** Business details for the receipt header. */
   businessName?: string;
   businessAddress?: string;
@@ -50,6 +56,8 @@ export default function POSReceipt({
   cashierName,
   shift,
   receiptNumber,
+  pointsEarned,
+  loyaltyDiscount = 0,
   businessName = "Nebula ERP",
   businessAddress = "123 Galaxy Road, Dhaka, Bangladesh",
 }: POSReceiptProps) {
@@ -128,11 +136,20 @@ export default function POSReceipt({
           </dd>
         </div>
 
-        {shift && (
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">Shift #</dt>
+          <dd className="truncate text-[var(--nebula-text-primary)]">
+            {shift ? shift.id.slice(0, 8) : "—"}
+          </dd>
+        </div>
+
+        {customer && (
           <div className="flex items-center justify-between">
-            <dt className="text-[var(--nebula-text-secondary)]">Shift</dt>
-            <dd className="truncate text-[var(--nebula-text-primary)]">
-              {shift.cashierName} · {shift.id.slice(0, 8)}
+            <dt className="text-[var(--nebula-text-secondary)]">
+              Points Earned
+            </dt>
+            <dd className="truncate font-medium text-[var(--nebula-success)]">
+              {pointsEarned ?? 0} pts
             </dd>
           </div>
         )}
@@ -195,9 +212,11 @@ export default function POSReceipt({
         </div>
 
         <div className="flex items-center justify-between">
-          <dt className="text-[var(--nebula-text-secondary)]">Discount</dt>
+          <dt className="text-[var(--nebula-text-secondary)]">
+            Discount Applied
+          </dt>
           <dd className="text-[var(--nebula-text-primary)]">
-            {formatCurrency(cart.discount)}
+            {formatCurrency(cart.discount + loyaltyDiscount)}
           </dd>
         </div>
 
@@ -242,10 +261,10 @@ export default function POSReceipt({
         </div>
       )}
 
-      {/* Payment methods */}
+      {/* Payment breakdown */}
       <div className="border-t border-[var(--nebula-border)] pt-3">
         <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[var(--nebula-text-muted)]">
-          Paid via
+          Payment Breakdown
         </p>
         <div className="space-y-1">
           {payments.map((payment, index) => (
@@ -262,6 +281,15 @@ export default function POSReceipt({
               </span>
             </div>
           ))}
+
+          <div className="flex items-center justify-between border-t border-[var(--nebula-border)] pt-1 text-sm font-semibold">
+            <span className="text-[var(--nebula-text-primary)]">Total</span>
+            <span className="text-[var(--nebula-primary)]">
+              {formatCurrency(
+                payments.reduce((sum, p) => sum + p.amount, 0),
+              )}
+            </span>
+          </div>
         </div>
       </div>
 

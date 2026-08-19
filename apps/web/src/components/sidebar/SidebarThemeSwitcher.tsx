@@ -13,7 +13,11 @@ import ThemeOptions from "../../theme/ThemeOptions";
  *
  * This reuses the shared ThemeOptions UI and does not change any business logic.
  */
-export default function SidebarThemeSwitcher() {
+export default function SidebarThemeSwitcher({
+  collapsed = false,
+}: {
+  collapsed?: boolean;
+}) {
   const { theme } = useTheme();
   const [open, setOpen] = useState(false);
 
@@ -52,34 +56,41 @@ export default function SidebarThemeSwitcher() {
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex w-full items-center gap-2 rounded-lg border border-[var(--nebula-border)] px-3 py-2 text-sm text-[var(--nebula-text-secondary)] transition-colors hover:bg-[var(--nebula-surface-muted)]"
+        title={collapsed ? theme.name : undefined}
+        className={`flex w-full items-center gap-2 rounded-lg border border-[var(--nebula-border)] px-3 py-2 text-sm text-[var(--nebula-text-secondary)] transition-colors hover:bg-[var(--nebula-surface-muted)] ${collapsed ? "justify-center" : ""}`}
       >
         <Palette
           size={16}
           className="text-[var(--nebula-primary)]"
         />
 
-        <span className="min-w-0 flex-1 truncate text-left font-medium">
-          {theme.name}
-        </span>
+        {!collapsed && (
+          <span className="min-w-0 flex-1 truncate text-left font-medium">
+            {theme.name}
+          </span>
+        )}
 
-        <span
-          className="h-4 w-4 shrink-0 rounded-full ring-1 ring-black/10"
-          style={{
-            background: `linear-gradient(135deg, ${theme.tokens["--nebula-primary"]} 0 50%, ${theme.tokens["--nebula-accent"]} 50% 100%)`,
-          }}
-        />
+        {!collapsed && (
+          <span
+            className="h-4 w-4 shrink-0 rounded-full ring-1 ring-black/10"
+            style={{
+              background: `linear-gradient(135deg, ${theme.tokens["--nebula-primary"]} 0 50%, ${theme.tokens["--nebula-accent"]} 50% 100%)`,
+            }}
+          />
+        )}
 
-        <ChevronUp
-          size={16}
-          className={`transition-transform ${open ? "" : "rotate-180"}`}
-        />
+        {!collapsed && (
+          <ChevronUp
+            size={16}
+            className={`transition-transform ${open ? "" : "rotate-180"}`}
+          />
+        )}
       </button>
 
       {open && (
         <div
           role="menu"
-          className="surface absolute bottom-full left-0 z-20 mb-2 w-64 p-2"
+          className={`surface absolute bottom-full z-20 mb-2 w-64 p-2 ${collapsed ? "left-16" : "left-0"}`}
         >
           <ThemeOptions
             className="grid grid-cols-1 gap-2"

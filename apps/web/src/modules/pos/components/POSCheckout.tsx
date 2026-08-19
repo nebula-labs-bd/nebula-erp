@@ -1,4 +1,4 @@
-import { Receipt, CreditCard } from "lucide-react";
+import { Receipt, CreditCard, Percent, Gift } from "lucide-react";
 
 import { formatCurrency } from "../../dashboard/utils/format";
 
@@ -25,6 +25,18 @@ type POSCheckoutProps = {
 
   /** Open the payment panel (hand-off to the Payment step). */
   onCompleteSale: () => void;
+
+  /** Manually applied discount (currency), folded into the displayed total. */
+  appliedDiscount?: number;
+
+  /** Loyalty discount (currency) redeemed against this sale. */
+  loyaltyDiscount?: number;
+
+  /** Open the discount panel. */
+  onApplyDiscount?: () => void;
+
+  /** Open the loyalty redemption panel. */
+  onRedeemLoyalty?: () => void;
 };
 
 /**
@@ -48,10 +60,21 @@ export default function POSCheckout({
   onWarehouseChange,
   disabled = false,
   onCompleteSale,
+  appliedDiscount = 0,
+  loyaltyDiscount = 0,
+  onApplyDiscount,
+  onRedeemLoyalty,
 }: POSCheckoutProps) {
   const hasItems = cart.items.length > 0;
 
   const hasWarehouse = Boolean(warehouseId);
+
+  // Grand total folds in the manual discount and any redeemed loyalty value
+  // so the cashier sees the exact amount that will be tendered.
+  const grandTotal = Math.max(
+    0,
+    cart.subtotal - cart.discount - appliedDiscount - loyaltyDiscount + cart.tax,
+  );
 
   return (
     <div className="surface p-4">
@@ -64,6 +87,27 @@ export default function POSCheckout({
         <h3 className="text-sm font-semibold text-[var(--nebula-text-primary)]">
           Checkout
         </h3>
+      </div>
+
+      {/* Discount + Loyalty quick actions */}
+      <div className="mb-3 flex gap-2">
+        <button
+          type="button"
+          onClick={onApplyDiscount}
+          disabled={!hasItems || !onApplyDiscount}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--nebula-border)] px-2 py-2 text-xs font-medium text-[var(--nebula-text-secondary)] transition-colors hover:border-[var(--nebula-primary)] hover:text-[var(--nebula-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Percent size={14} /> Apply Discount
+        </button>
+
+        <button
+          type="button"
+          onClick={onRedeemLoyalty}
+          disabled={!hasItems || !customer || !onRedeemLoyalty}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--nebula-border)] px-2 py-2 text-xs font-medium text-[var(--nebula-text-secondary)] transition-colors hover:border-[var(--nebula-primary)] hover:text-[var(--nebula-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Gift size={14} /> Redeem Points
+        </button>
       </div>
 
       <dl className="space-y-2 text-sm">
@@ -83,7 +127,17 @@ export default function POSCheckout({
           </dt>
 
           <dd className="font-medium text-[var(--nebula-text-primary)]">
-            {formatCurrency(cart.discount)}
+            {formatCurrency(cart.discount + appliedDiscount)}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <dt className="text-[var(--nebula-text-secondary)]">
+            Loyalty Discount
+          </dt>
+
+          <dd className="font-medium text-[var(--nebula-success)]">
+            {formatCurrency(loyaltyDiscount)}
           </dd>
         </div>
 
@@ -99,11 +153,11 @@ export default function POSCheckout({
 
         <div className="flex items-center justify-between border-t border-[var(--nebula-border)] pt-2">
           <dt className="text-base font-semibold text-[var(--nebula-text-primary)]">
-            Total
+            Grand Total
           </dt>
 
           <dd className="text-base font-bold text-[var(--nebula-primary)]">
-            {formatCurrency(cart.total)}
+            {formatCurrency(grandTotal)}
           </dd>
         </div>
       </dl>

@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { LayoutDashboard, ShoppingCart } from "lucide-react";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  X,
+} from "lucide-react";
 
 import { usePOSCart, type POSProductInput } from "../hooks/usePOSCart";
 
@@ -11,25 +15,34 @@ import POSCheckout from "../components/POSCheckout";
 import POSPaymentPanel from "../components/POSPaymentPanel";
 import POSReceipt from "../components/POSReceipt";
 import POSPrintReceipt from "../components/POSPrintReceipt";
+import POSQuickActions from "../components/POSQuickActions";
+import POSCustomerHistory from "../components/POSCustomerHistory";
+import POSDashboard from "../components/POSDashboard";
+
+import POSDiscountPanel from "../promotions/components/POSDiscountPanel";
+import RedeemPointsPanel from "../loyalty/components/RedeemPointsPanel";
+import POSReturnForm from "../returns/components/POSReturnForm";
 
 import { createPOSTransaction } from "../services/pos.service";
 
 import { useWarehouses } from "../../inventory/hooks/useWarehouse";
 import useCurrentUser from "../../../hooks/useCurrentUser";
+import usePermission from "../../../hooks/usePermission";
+import { permissions } from "../../../permissions/permissions";
+
+import { useEarnPoints } from "../loyalty/hooks/useLoyalty";
+import { currencyToPoints } from "../loyalty/services/loyalty.service";
 
 import { useCurrentShift, useShiftMutation } from "../shift/hooks/useShift";
 import POSOpenShift from "../shift/components/POSOpenShift";
 import POSShiftPanel from "../shift/components/POSShiftPanel";
 import POSCloseShift from "../shift/components/POSCloseShift";
 
-import POSDailySummary from "../reports/components/POSDailySummary";
-import POSTopProducts from "../reports/components/POSTopProducts";
-import POSPaymentSummary from "../reports/components/POSPaymentSummary";
-
-import type { POSCustomer } from "../types/pos.types";
+import type { POSCustomer, Cart } from "../types/pos.types";
 import type { POSPayment } from "../types/transaction.types";
 import type { POSTransactionResult } from "../services/pos.service";
 import type { POSReportParams } from "../reports/types/report.types";
+import type { DiscountResult } from "../promotions/types/discount.types";
 
 /** Stage of the checkout flow shown in the right-hand column. */
 type POSStage = "checkout" | "payment" | "receipt";
@@ -66,6 +79,7 @@ export default function POSPage() {
     removeProduct,
     updateQuantity,
     clearCart,
+    replaceCart,
   } = usePOSCart();
 
   const { data: warehouses = [] } = useWarehouses();
@@ -90,11 +104,53 @@ export default function POSPage() {
 
   const [activeView, setActiveView] = useState<POSView>("sale");
 
+  const { can } = usePermission();
+
+  // Permission-aware affordances (Cashier vs Manager boundaries).
+  // Managers (and admins) can view reports and issue refunds; cashiers
+  // sell and view their own shift/sales only.
+  const canViewReports = can(permissions.REPORTS_VIEW);
+  const canManageReturns = can(permissions.REPORTS_VIEW);
+
   const today = new Date().toISOString().split("T")[0];
   const reportParams: POSReportParams = {
     date: today,
     shiftId: shift?.id,
   };
+
+  const earnPoints = useEarnPoints(customer?.id ?? null);
+
+  // Manually applied discount (currency) + loyalty discount (currency) that
+  // fold into the checkout display + receipt. Display-only at POS; the real
+  // discount is taken on the cart by reusing the promotions calculator.
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
+
+  // Overlay state for quick actions.
+  const [showDiscount, setShowDiscount] = useState(false);
+  const [showLoyalty, setShowLoyalty] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showReturns, setShowReturns] = useState(false);
+  const [showReceipts, setShowReceipts] = useState(false);
+
+  // Loyalty points earned on the just-completed sale (for the receipt).
+  const [pointsEarned, setPointsEarned] = useState(0);
+
+  // Cart view with the manual + loyalty discounts folded in (display only).
+  // The promotions calculator owns discount math; here we just present the
+  // cart the cashier is building plus any applied discounts for the checkout
+  // summary and the discount panel.
+  const cartView: Cart = useMemo(
+    () => ({
+      ...cart,
+      discount: cart.discount + appliedDiscount + loyaltyDiscount,
+      total: Math.max(
+        0,
+        cart.subtotal - cart.discount - appliedDiscount - loyaltyDiscount + cart.tax,
+      ),
+    }),
+    [cart, appliedDiscount, loyaltyDiscount],
+  );
 
   function handleAdd(product: POSProductInput) {
     addProduct(product);
@@ -127,12 +183,25 @@ export default function POSPage() {
 
     try {
       const created = await createPOSTransaction(
-        cart,
+        cartView,
         customer,
         payments,
         warehouseId,
         shift?.id,
       );
+
+      // Award loyalty points for the completed sale (reuses the loyalty module;
+      // POS never owns the points ledger). Best-effort + receipt-only display.
+      if (customer && earnPoints) {
+        const earned = currencyToPoints(created.transaction.total);
+
+        try {
+          await earnPoints.mutateAsync(earned);
+          setPointsEarned(earned);
+        } catch {
+          setPointsEarned(earned);
+        }
+      }
 
       // Record the cash sale against the open shift so expected cash stays in
       // sync. Best-effort: a failure here must never void the completed sale.
@@ -172,31 +241,31 @@ export default function POSPage() {
   function handleNewSale() {
     setResult(null);
     setError(null);
+    setAppliedDiscount(0);
+    setLoyaltyDiscount(0);
+    setPointsEarned(0);
     setStage("checkout");
   }
 
-  // Before a shift is open, the cashier must open the register.
-  if (!shiftLoading && !shift) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--nebula-text-primary)]">
-            Point of Sale
-          </h1>
+  // Reuse the promotions calculator to fold a discount result onto the cart.
+  function handleApplyDiscount(result: DiscountResult) {
+    // The calculator returns a fully-recomputed set of lines; push them back
+    // into the cart hook so every downstream component sees consistent totals.
+    // POS does not duplicate cart math — it delegates to the existing
+    // calculator and the cart hook's `calculateTotals`.
+    replaceCart(result.cart.items);
+    setAppliedDiscount(result.totalDiscount);
+    setShowDiscount(false);
+  }
 
-          <p className="mt-2 text-[var(--nebula-text-secondary)]">
-            Open the cash register to begin selling.
-          </p>
-        </div>
+  function handleRedeemLoyalty(discountValue: number, _points: number) {
+    setLoyaltyDiscount(discountValue);
+    setShowLoyalty(false);
+  }
 
-        <POSOpenShift
-          cashierName={me?.data?.name ?? ""}
-          onOpened={() => {
-            // `useCurrentShift` refetches via its invalidation on open.
-          }}
-        />
-      </div>
-    );
+  function handleReturned() {
+    setShowReturns(false);
+    handleNewSale();
   }
 
   return (
@@ -228,11 +297,17 @@ export default function POSPage() {
         <button
           type="button"
           onClick={() => setActiveView("dashboard")}
+          disabled={!canViewReports}
+          title={
+            canViewReports
+              ? undefined
+              : "Reports are restricted to managers."
+          }
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
             activeView === "dashboard"
               ? "bg-[var(--nebula-primary)] text-white"
               : "border border-[var(--nebula-border)] text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-muted)]"
-          }`}
+          } disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <LayoutDashboard size={14} /> Dashboard
         </button>
@@ -248,17 +323,39 @@ export default function POSPage() {
       )}
 
       {/* ─── DASHBOARD VIEW ─── */}
-      {activeView === "dashboard" && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <POSDailySummary params={reportParams} />
-          <POSTopProducts params={reportParams} />
-          <POSPaymentSummary params={reportParams} />
-        </div>
-      )}
+      {activeView === "dashboard" &&
+        (canViewReports ? (
+          <POSDashboard
+            params={reportParams}
+            shift={shift}
+            cashBalance={shift?.expectedCash}
+          />
+        ) : (
+          <div className="surface flex items-center justify-center p-8 text-sm text-[var(--nebula-text-secondary)]">
+            Reports are restricted to managers.
+          </div>
+        ))}
 
       {/* ─── SALE WORKSPACE ─── */}
       {activeView === "sale" && (
         <div className="space-y-6">
+          {shiftLoading ? (
+            <div className="surface flex items-center justify-center p-8 text-sm text-[var(--nebula-text-secondary)]">
+              Checking register status…
+            </div>
+          ) : shift ? (
+            <>
+          {/* Quick actions rail — opens existing POS sub-features. */}
+          <POSQuickActions
+            customer={customer}
+            onReturnSale={() => setShowReturns(true)}
+            onCustomerHistory={() => setShowHistory(true)}
+            onApplyDiscount={() => setShowDiscount(true)}
+            onRedeemLoyalty={() => setShowLoyalty(true)}
+            onRecentReceipts={() => setShowReceipts(true)}
+            canManageReturns={canManageReturns}
+          />
+
           {/* Main workspace: search (left) + cart (right) */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
             <section className="lg:col-span-3">
@@ -296,7 +393,7 @@ export default function POSPage() {
               <div className="h-[420px]">
                 {stage === "checkout" && (
                   <POSCheckout
-                    cart={cart}
+                    cart={cartView}
                     customer={customer}
                     warehouseId={warehouseId}
                     warehouses={warehouses}
@@ -305,6 +402,10 @@ export default function POSPage() {
                       setError(null);
                     }}
                     onCompleteSale={handleCompleteSale}
+                    appliedDiscount={appliedDiscount}
+                    loyaltyDiscount={loyaltyDiscount}
+                    onApplyDiscount={() => setShowDiscount(true)}
+                    onRedeemLoyalty={() => setShowLoyalty(true)}
                   />
                 )}
 
@@ -323,11 +424,13 @@ export default function POSPage() {
                   <div className="flex h-[420px] flex-col gap-4 overflow-y-auto">
                     <POSReceipt
                       result={result}
-                      cart={cart}
+                      cart={cartView}
                       customer={customer}
                       shift={shift}
                       cashierName={me?.data?.name}
                       receiptNumber={result.salesOrder.orderNumber}
+                      pointsEarned={pointsEarned}
+                      loyaltyDiscount={loyaltyDiscount}
                       onClose={handleNewSale}
                     />
 
@@ -336,11 +439,13 @@ export default function POSPage() {
                         hidden iframe. Mounts and auto-triggers the print dialog. */}
                     <POSPrintReceipt
                       result={result}
-                      cart={cart}
+                      cart={cartView}
                       customer={customer}
                       shift={shift}
                       cashierName={me?.data?.name}
                       receiptNumber={result.salesOrder.orderNumber}
+                      pointsEarned={pointsEarned}
+                      loyaltyDiscount={loyaltyDiscount}
                       onClose={handleNewSale}
                     />
                   </div>
@@ -348,8 +453,93 @@ export default function POSPage() {
               </div>
             </section>
           </div>
+          </>
+          ) : (
+            <div className="surface flex flex-col items-center justify-center gap-4 p-8">
+              <div className="text-center">
+                <h2 className="text-lg font-semibold text-[var(--nebula-text-primary)]">
+                  Register not open
+                </h2>
+
+                <p className="mt-1 text-sm text-[var(--nebula-text-secondary)]">
+                  Open the cash register to begin selling.
+                </p>
+              </div>
+
+              <POSOpenShift cashierName={me?.data?.name ?? ""} />
+            </div>
+          )}
         </div>
       )}
+
+      {/* ─── Quick-action overlays (reuse existing POS sub-features) ─── */}
+      <POSOverlay
+        open={showDiscount}
+        title="Discounts & Promotions"
+        onClose={() => setShowDiscount(false)}
+      >
+        <POSDiscountPanel cart={cartView} onApply={handleApplyDiscount} />
+      </POSOverlay>
+
+      <POSOverlay
+        open={showLoyalty}
+        title="Redeem Loyalty Points"
+        onClose={() => setShowLoyalty(false)}
+      >
+        <RedeemPointsPanel
+          customerId={customer?.id ?? null}
+          customerName={customer?.name ?? ""}
+          onRedeemed={handleRedeemLoyalty}
+        />
+      </POSOverlay>
+
+      <POSOverlay
+        open={showHistory}
+        title="Customer History"
+        onClose={() => setShowHistory(false)}
+      >
+        <POSCustomerHistory
+          customerId={customer?.id ?? null}
+          customerName={customer?.name ?? ""}
+        />
+      </POSOverlay>
+
+      <POSOverlay
+        open={showReturns}
+        title="Return Sale"
+        onClose={() => setShowReturns(false)}
+      >
+        <POSReturnForm
+          warehouseId={warehouseId}
+          customerId={customer?.id ?? ""}
+          shiftId={shift?.id}
+          onReturned={handleReturned}
+        />
+      </POSOverlay>
+
+      <POSOverlay
+        open={showReceipts}
+        title="Last Receipt"
+        onClose={() => setShowReceipts(false)}
+      >
+        {result ? (
+          <POSReceipt
+            result={result}
+            cart={cartView}
+            customer={customer}
+            shift={shift}
+            cashierName={me?.data?.name}
+            receiptNumber={result.salesOrder.orderNumber}
+            pointsEarned={pointsEarned}
+            loyaltyDiscount={loyaltyDiscount}
+            onClose={() => setShowReceipts(false)}
+          />
+        ) : (
+          <p className="p-4 text-sm text-[var(--nebula-text-muted)]">
+            No receipt for the current session yet.
+          </p>
+        )}
+      </POSOverlay>
 
       {/* Close-shift reconciliation overlay */}
       {closing && shift && (
@@ -367,6 +557,59 @@ export default function POSPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Lightweight, polished modal overlay used by the POS quick actions.
+ *
+ * Purely presentational — it renders its children in a centered, scrollable
+ * card above a dimmed backdrop. No business logic; the panels it hosts own
+ * their own behaviour and call `onClose` when the user dismisses them.
+ */
+function POSOverlay({
+  open,
+  title,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={onClose}
+    >
+      <div
+        className="surface flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-[var(--nebula-border)] shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[var(--nebula-border)] px-4 py-3">
+          <h2 className="text-sm font-semibold text-[var(--nebula-text-primary)]">
+            {title}
+          </h2>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-lg p-1 text-[var(--nebula-text-secondary)] transition-colors hover:bg-[var(--nebula-surface-muted)] hover:text-[var(--nebula-text-primary)]"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </div>
     </div>
   );
 }
