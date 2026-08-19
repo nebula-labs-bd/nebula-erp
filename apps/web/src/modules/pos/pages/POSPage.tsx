@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { LayoutDashboard, ShoppingCart } from "lucide-react";
+
 import { usePOSCart, type POSProductInput } from "../hooks/usePOSCart";
 
 import POSProductSearch from "../components/POSProductSearch";
@@ -20,12 +22,20 @@ import POSOpenShift from "../shift/components/POSOpenShift";
 import POSShiftPanel from "../shift/components/POSShiftPanel";
 import POSCloseShift from "../shift/components/POSCloseShift";
 
+import POSDailySummary from "../reports/components/POSDailySummary";
+import POSTopProducts from "../reports/components/POSTopProducts";
+import POSPaymentSummary from "../reports/components/POSPaymentSummary";
+
 import type { POSCustomer } from "../types/pos.types";
 import type { POSPayment } from "../types/transaction.types";
 import type { POSTransactionResult } from "../services/pos.service";
+import type { POSReportParams } from "../reports/types/report.types";
 
 /** Stage of the checkout flow shown in the right-hand column. */
 type POSStage = "checkout" | "payment" | "receipt";
+
+/** Top-level view toggle: sales workspace or dashboard. */
+type POSView = "sale" | "dashboard";
 
 /**
  * POS workspace.
@@ -77,6 +87,14 @@ export default function POSPage() {
   const [result, setResult] = useState<POSTransactionResult | null>(null);
 
   const [closing, setClosing] = useState(false);
+
+  const [activeView, setActiveView] = useState<POSView>("sale");
+
+  const today = new Date().toISOString().split("T")[0];
+  const reportParams: POSReportParams = {
+    date: today,
+    shiftId: shift?.id,
+  };
 
   function handleAdd(product: POSProductInput) {
     addProduct(product);
@@ -194,6 +212,32 @@ export default function POSPage() {
         </p>
       </div>
 
+      {/* View toggle: Sale / Dashboard */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveView("sale")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+            activeView === "sale"
+              ? "bg-[var(--nebula-primary)] text-white"
+              : "border border-[var(--nebula-border)] text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-muted)]"
+          }`}
+        >
+          <ShoppingCart size={14} /> Sale
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveView("dashboard")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+            activeView === "dashboard"
+              ? "bg-[var(--nebula-primary)] text-white"
+              : "border border-[var(--nebula-border)] text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-muted)]"
+          }`}
+        >
+          <LayoutDashboard size={14} /> Dashboard
+        </button>
+      </div>
+
       {/* Active shift banner */}
       {shift && (
         <POSShiftPanel
@@ -203,95 +247,109 @@ export default function POSPage() {
         />
       )}
 
-      {/* Main workspace: search (left) + cart (right) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <section className="lg:col-span-3">
-          <div className="h-[60vh] min-h-[420px]">
-            <POSProductSearch onSelectProduct={handleAdd} />
-          </div>
-        </section>
+      {/* ─── DASHBOARD VIEW ─── */}
+      {activeView === "dashboard" && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <POSDailySummary params={reportParams} />
+          <POSTopProducts params={reportParams} />
+          <POSPaymentSummary params={reportParams} />
+        </div>
+      )}
 
-        <section className="lg:col-span-2">
-          <div className="h-[60vh] min-h-[420px]">
-            <POSCart
-              cart={cart}
-              onIncrease={handleIncrease}
-              onDecrease={handleDecrease}
-              onRemove={removeProduct}
-              onClear={clearCart}
-            />
-          </div>
-        </section>
-      </div>
+      {/* ─── SALE WORKSPACE ─── */}
+      {activeView === "sale" && (
+        <div className="space-y-6">
+          {/* Main workspace: search (left) + cart (right) */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            <section className="lg:col-span-3">
+              <div className="h-[60vh] min-h-[420px]">
+                <POSProductSearch onSelectProduct={handleAdd} />
+              </div>
+            </section>
 
-      {/* Bottom: customer select + checkout / payment / receipt */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <section className="lg:col-span-3">
-          <POSCustomerSelect
-            value={customer}
-            onChange={(next) => {
-              setCustomer(next);
-              setError(null);
-            }}
-          />
-        </section>
-
-        <section className="lg:col-span-2">
-          <div className="h-[420px]">
-            {stage === "checkout" && (
-              <POSCheckout
-                cart={cart}
-                customer={customer}
-                warehouseId={warehouseId}
-                warehouses={warehouses}
-                onWarehouseChange={(next) => {
-                  setWarehouseId(next);
-                  setError(null);
-                }}
-                onCompleteSale={handleCompleteSale}
-              />
-            )}
-
-            {stage === "payment" && (
-              <POSPaymentPanel
-                cart={cart}
-                customer={customer}
-                onConfirm={handleConfirmPayment}
-                onCancel={handleCancelPayment}
-                processing={processing}
-                error={error}
-              />
-            )}
-
-            {stage === "receipt" && result && (
-              <div className="flex h-[420px] flex-col gap-4 overflow-y-auto">
-                <POSReceipt
-                  result={result}
+            <section className="lg:col-span-2">
+              <div className="h-[60vh] min-h-[420px]">
+                <POSCart
                   cart={cart}
-                  customer={customer}
-                  shift={shift}
-                  cashierName={me?.data?.name}
-                  receiptNumber={result.salesOrder.orderNumber}
-                  onClose={handleNewSale}
-                />
-
-                {/* Thermal / 80mm print step — replaces the page-wide
-                    window.print() with a dedicated thermal receipt in a
-                    hidden iframe. Mounts and auto-triggers the print dialog. */}
-                <POSPrintReceipt
-                  result={result}
-                  cart={cart}
-                  customer={customer}
-                  shift={shift}
-                  cashierName={me?.data?.name}
-                  receiptNumber={result.salesOrder.orderNumber}
-                  onClose={handleNewSale}
+                  onIncrease={handleIncrease}
+                  onDecrease={handleDecrease}
+                  onRemove={removeProduct}
+                  onClear={clearCart}
                 />
               </div>
-            )}
+            </section>
           </div>
-        </section>
-      </div>
+
+          {/* Bottom: customer select + checkout / payment / receipt */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            <section className="lg:col-span-3">
+              <POSCustomerSelect
+                value={customer}
+                onChange={(next) => {
+                  setCustomer(next);
+                  setError(null);
+                }}
+              />
+            </section>
+
+            <section className="lg:col-span-2">
+              <div className="h-[420px]">
+                {stage === "checkout" && (
+                  <POSCheckout
+                    cart={cart}
+                    customer={customer}
+                    warehouseId={warehouseId}
+                    warehouses={warehouses}
+                    onWarehouseChange={(next) => {
+                      setWarehouseId(next);
+                      setError(null);
+                    }}
+                    onCompleteSale={handleCompleteSale}
+                  />
+                )}
+
+                {stage === "payment" && (
+                  <POSPaymentPanel
+                    cart={cart}
+                    customer={customer}
+                    onConfirm={handleConfirmPayment}
+                    onCancel={handleCancelPayment}
+                    processing={processing}
+                    error={error}
+                  />
+                )}
+
+                {stage === "receipt" && result && (
+                  <div className="flex h-[420px] flex-col gap-4 overflow-y-auto">
+                    <POSReceipt
+                      result={result}
+                      cart={cart}
+                      customer={customer}
+                      shift={shift}
+                      cashierName={me?.data?.name}
+                      receiptNumber={result.salesOrder.orderNumber}
+                      onClose={handleNewSale}
+                    />
+
+                    {/* Thermal / 80mm print step — replaces the page-wide
+                        window.print() with a dedicated thermal receipt in a
+                        hidden iframe. Mounts and auto-triggers the print dialog. */}
+                    <POSPrintReceipt
+                      result={result}
+                      cart={cart}
+                      customer={customer}
+                      shift={shift}
+                      cashierName={me?.data?.name}
+                      receiptNumber={result.salesOrder.orderNumber}
+                      onClose={handleNewSale}
+                    />
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
 
       {/* Close-shift reconciliation overlay */}
       {closing && shift && (
