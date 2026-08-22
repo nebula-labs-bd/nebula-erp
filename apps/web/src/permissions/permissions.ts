@@ -30,6 +30,8 @@ export const permissions = {
 
   POS_VIEW: "pos:view",
 
+  SERVICE_DESK_VIEW: "service-desk:view",
+
   SETTINGS_MANAGE: "settings:manage",
 } as const;
 

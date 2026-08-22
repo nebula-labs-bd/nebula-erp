@@ -5,6 +5,7 @@
  */
 export const appConfig = {
   name: "Nebula ERP",
+  tagline: "Enterprise Platform",
   edition: "Enterprise Edition",
   version: "1.0.0",
   build: "2026.08",

@@ -1,53 +1,52 @@
-import { useLocation } from "react-router-dom";
-
 import GlobalSearch from "../../modules/search/components/GlobalSearch";
 import NotificationBell from "../../modules/notifications/components/NotificationBell";
 import { SidebarMobileToggle } from "../sidebar/Sidebar";
-import { findNavigationItemByPath } from "../../navigation/navigation.types";
-import { navigationConfig } from "../../navigation/navigation";
+import HeaderBrand from "./HeaderBrand";
+import CompanySwitcher from "./CompanySwitcher";
+import UserMenu from "./UserMenu";
 
 /**
- * Derives the current page title from the navigation configuration based on
- * the active route. Falls back to a friendly default when no match is found.
+ * Enterprise ERP Application Header.
+ * 
+ * Features:
+ * - Sticky positioning
+ * - Glassmorphism effect
+ * - Identity & Company Context (Left)
+ * - Prominent Global Search (Center)
+ * - User & Notifications (Right)
+ * - Responsive layout
  */
-function usePageTitle(): string {
-  const location = useLocation();
-
-  // Try exact match first
-  const exact = findNavigationItemByPath(navigationConfig, location.pathname);
-  if (exact) return exact.name;
-
-  // Try matching by path prefix (e.g. /accounting/ledger → Accounting)
-  const segments = location.pathname.split("/").filter(Boolean);
-  if (segments.length > 0) {
-    const prefix = "/" + segments[0];
-    const prefixMatch = findNavigationItemByPath(navigationConfig, prefix);
-    if (prefixMatch) return prefixMatch.name;
-  }
-
-  return "Dashboard";
-}
-
 export default function Header() {
-  const pageTitle = usePageTitle();
-
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--nebula-border)] bg-[var(--nebula-surface)] px-6">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center border-b border-[var(--nebula-border)] bg-[var(--nebula-surface)]/80 backdrop-blur-md px-4 lg:px-6">
+      {/* Left Zone: Brand & Context */}
+      <div className="flex flex-1 items-center gap-4">
         <SidebarMobileToggle />
-        <h2 className="text-lg font-semibold text-[var(--nebula-text-primary)]">
-          {pageTitle}
-        </h2>
+        <HeaderBrand />
+        <div className="hidden h-8 w-px bg-[var(--nebula-border)] lg:block" />
+        <div className="hidden lg:block">
+          <CompanySwitcher />
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Center Zone: Search */}
+      <div className="hidden max-w-xl flex-[2] justify-center md:flex">
         <GlobalSearch />
+      </div>
+
+      {/* Right Zone: Actions & User */}
+      <div className="flex flex-1 items-center justify-end gap-2 lg:gap-4">
+        {/* Mobile Search Button (only shown on small screens) */}
+        <div className="md:hidden">
+           {/* We reuse GlobalSearch's modal, but for mobile we'll just show a search icon button */}
+           <GlobalSearch />
+        </div>
 
         <NotificationBell />
-
-        <div className="text-sm text-[var(--nebula-text-secondary)]">
-          Admin User
-        </div>
+        
+        <div className="hidden h-8 w-px bg-[var(--nebula-border)] lg:block" />
+        
+        <UserMenu />
       </div>
     </header>
   );

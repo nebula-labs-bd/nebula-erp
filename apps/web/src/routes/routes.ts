@@ -15,6 +15,16 @@ import SettingsPage from "../modules/settings/pages/SettingsPage";
 import ReportsPage from "../modules/reports/pages/ReportsPage";
 import POSPage from "../modules/pos/pages/POSPage";
 
+import {
+  ServiceDeskDashboardPage,
+  ServiceDeskRequestsPage,
+  ServiceDeskCustomersPage,
+  ServiceDeskBusinessesPage,
+  ServiceDeskTechniciansPage,
+  ServiceDeskSchedulePage,
+  ServiceDeskReportsPage,
+} from "../modules/service-desk";
+
 
 export const routes = [
   {
@@ -76,5 +86,35 @@ export const routes = [
   {
     path: "/pos",
     element: POSPage,
+  },
+
+  /* Service Desk module (foundation) */
+  {
+    path: "/service-dashboard",
+    element: ServiceDeskDashboardPage,
+  },
+  {
+    path: "/service-requests",
+    element: ServiceDeskRequestsPage,
+  },
+  {
+    path: "/service-customers",
+    element: ServiceDeskCustomersPage,
+  },
+  {
+    path: "/service-businesses",
+    element: ServiceDeskBusinessesPage,
+  },
+  {
+    path: "/service-technicians",
+    element: ServiceDeskTechniciansPage,
+  },
+  {
+    path: "/service-schedule",
+    element: ServiceDeskSchedulePage,
+  },
+  {
+    path: "/service-reports",
+    element: ServiceDeskReportsPage,
   },
 ];

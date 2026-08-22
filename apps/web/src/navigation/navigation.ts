@@ -181,6 +181,72 @@ export const navigationConfig: NavigationItem[] = [
     type: "link",
   },
 
+  // 🛠 Service Management
+  {
+    id: "service-desk",
+    name: "Service Management",
+    icon: "Headset",
+    type: "group",
+    children: [
+      {
+        id: "service-dashboard",
+        name: "Dashboard",
+        icon: "LayoutDashboard",
+        path: "/service-dashboard",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-requests",
+        name: "Requests",
+        icon: "Ticket",
+        path: "/service-requests",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-customers",
+        name: "Customers",
+        icon: "Users",
+        path: "/service-customers",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-businesses",
+        name: "Businesses",
+        icon: "Building2",
+        path: "/service-businesses",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-technicians",
+        name: "Technicians",
+        icon: "Wrench",
+        path: "/service-technicians",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-schedule",
+        name: "Schedule",
+        icon: "CalendarDays",
+        path: "/service-schedule",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+      {
+        id: "service-reports",
+        name: "Reports",
+        icon: "BarChart3",
+        path: "/service-reports",
+        permission: permissions.SERVICE_DESK_VIEW,
+        type: "link",
+      },
+    ],
+  },
+
   // ⚙ Administration
   {
     id: "administration",

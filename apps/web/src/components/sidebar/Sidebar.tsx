@@ -11,7 +11,7 @@ import usePermission from "../../hooks/usePermission";
 import { useSidebar } from "./SidebarContext";
 import { getIconComponent } from "./NavigationIcons";
 import SidebarBrand from "./SidebarBrand";
-import SidebarThemeDots from "./SidebarThemeDots";
+import SidebarFooter from "./SidebarFooter";
 
 const OPEN_GROUPS_STORAGE_KEY = "nebula-sidebar-open-groups";
 
@@ -31,7 +31,7 @@ const OPEN_GROUPS_STORAGE_KEY = "nebula-sidebar-open-groups";
 function SidebarContent() {
   const { can } = usePermission();
   const location = useLocation();
-  const { collapsed, mobileOpen, setMobileOpen } = useSidebar();
+  const { collapsed, mobileOpen, setMobileOpen, setCollapsed } = useSidebar();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -76,6 +76,19 @@ function SidebarContent() {
   }, [mobileOpen, setMobileOpen]);
 
   const visibleItems = getVisibleNavigationItems(can);
+
+  /**
+   * Part 2: clicking a group icon while the rail is collapsed should
+   * auto-expand the sidebar, open the group and reveal its items — but keep
+   * the current route (no navigation). The width transition is handled by the
+   * <aside> `transition-[width]` class.
+   */
+  const openGroupFromCollapsed = (groupId: string) => {
+    if (collapsed) {
+      setCollapsed(false);
+    }
+    setOpenGroups(new Set([groupId]));
+  };
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((prev) => {
@@ -125,6 +138,7 @@ function SidebarContent() {
               item={item}
               isActive={isPathActive(item.path || "")}
               onGroupToggle={toggleGroup}
+              onExpandFromCollapsed={openGroupFromCollapsed}
               isGroupOpen={isGroupOpen}
               collapsed={collapsed}
             />
@@ -132,9 +146,7 @@ function SidebarContent() {
         </nav>
 
         {/* Footer Area - always visible at bottom */}
-        <footer className="border-t border-[var(--nebula-border)] p-3">
-          <SidebarThemeDots collapsed={collapsed} />
-        </footer>
+        <SidebarFooter collapsed={collapsed} />
       </aside>
     </>
   );
@@ -143,12 +155,14 @@ function NavigationItemNode({
   item,
   isActive,
   onGroupToggle,
+  onExpandFromCollapsed,
   isGroupOpen,
   collapsed,
 }: {
   item: NavigationItem;
   isActive: boolean;
   onGroupToggle: (groupId: string) => void;
+  onExpandFromCollapsed: (groupId: string) => void;
   isGroupOpen: (groupId: string) => boolean;
   collapsed: boolean;
 }) {
@@ -201,7 +215,11 @@ function NavigationItemNode({
     <div className="space-y-1">
       <button
         type="button"
-        onClick={() => onGroupToggle(item.id)}
+        onClick={() =>
+          collapsed
+            ? onExpandFromCollapsed(item.id)
+            : onGroupToggle(item.id)
+        }
         aria-expanded={open}
         aria-controls={`${item.id}-children`}
         title={collapsed ? item.name : undefined}
@@ -259,7 +277,7 @@ function NavigationItemNode({
                     <>
                       {active && (
                         <span
-                          className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-[var(--nebula-accent)]"
+                          className="nebula-rail-pulse absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-[var(--nebula-accent)]"
                           aria-hidden="true"
                         />
                       )}

@@ -92,20 +92,22 @@ function SearchTrigger({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2 rounded-[var(--nebula-radius-md)] border border-[var(--nebula-border)] bg-[var(--nebula-surface)] px-3 py-2 text-sm text-[var(--nebula-text-secondary)] shadow-[var(--nebula-shadow-sm)] transition-colors hover:bg-[var(--nebula-surface-muted)]"
+      className="group nebula-search-focus flex h-10 w-full max-w-md items-center gap-3 rounded-xl border border-[var(--nebula-border)] bg-[var(--nebula-surface-muted)]/50 px-4 text-sm font-medium text-[var(--nebula-text-secondary)] transition-all duration-200 hover:border-[var(--nebula-primary)]/50 hover:bg-[var(--nebula-surface)] hover:shadow-[var(--nebula-shadow-md)] hover:shadow-[var(--nebula-primary)]/10 focus-visible:border-[var(--nebula-primary)] focus-visible:shadow-[var(--nebula-shadow-md)]"
       aria-label="Open global search"
     >
       <Search
-        size={16}
-        strokeWidth={2}
-        className="text-[var(--nebula-text-muted)]"
+        size={18}
+        strokeWidth={2.25}
+        className="text-[var(--nebula-text-muted)] transition-all duration-200 group-hover:scale-110 group-hover:text-[var(--nebula-primary)]"
         aria-hidden
       />
 
-      <span className="hidden sm:inline">Search…</span>
+      <span className="flex-1 text-left font-semibold text-[var(--nebula-text-muted)] transition-colors group-hover:text-[var(--nebula-text-secondary)]">
+        Search anything…
+      </span>
 
-      <kbd className="hidden rounded border border-[var(--nebula-border)] bg-[var(--nebula-surface-muted)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--nebula-text-muted)] sm:inline">
-        {isMac() ? "⌘" : "Ctrl"} K
+      <kbd className="flex items-center gap-0.5 rounded-md border border-[var(--nebula-border)] bg-[var(--nebula-surface)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--nebula-text-muted)] shadow-sm transition-colors group-hover:border-[var(--nebula-primary)]/40 group-hover:text-[var(--nebula-primary)]">
+        {isMac() ? "⌘" : "Ctrl"}+K
       </kbd>
     </button>
   );
