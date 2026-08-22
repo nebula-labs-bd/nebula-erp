@@ -69,7 +69,12 @@ export interface ServiceBusinessRef {
   name: string;
 }
 
-export interface ServiceTechnician {
+/**
+ * Reference to the assigned employee (technician/agent). Resolves against the
+ * shared Employee registry from `core` — the service desk must NOT keep its
+ * own copy of staff. Display-only fields are denormalised for convenience.
+ */
+export interface ServiceEmployeeRef {
   id: string;
   name: string;
   specialty?: string;
@@ -95,7 +100,13 @@ export interface ServiceRequest {
   businessId?: string;
   business?: ServiceBusinessRef;
 
-  assignedTechnician?: ServiceTechnician;
+  /**
+   * Id of the assigned employee in the shared `core` Employee registry.
+   * Replaces the previous `assignedTechnician` copy (integration point:
+   * the same technician record is reused by HR, scheduling and payroll).
+   */
+  assignedEmployeeId?: string;
+  assignedEmployee?: ServiceEmployeeRef;
 
   createdDate: string;
   scheduledDate?: string;

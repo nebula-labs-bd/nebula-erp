@@ -26,5 +26,5 @@ export type {
   ServiceDeskDashboardStats,
   ServiceCustomerRef,
   ServiceBusinessRef,
-  ServiceTechnician,
+  ServiceEmployeeRef,
 } from "./types/service-desk.types";

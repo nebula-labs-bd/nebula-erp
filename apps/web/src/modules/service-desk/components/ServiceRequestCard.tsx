@@ -52,7 +52,7 @@ export default function ServiceRequestCard({
         <p className="mt-0.5 truncate text-xs text-[var(--nebula-text-secondary)]">
           {request.customer?.name ?? "Unassigned customer"}
           {" · "}
-          {request.assignedTechnician?.name ?? "No technician"}
+          {request.assignedEmployee?.name ?? "Unassigned"}
         </p>
       </div>
 
