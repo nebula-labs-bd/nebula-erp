@@ -33,7 +33,10 @@ export default function POSCustomerSelect({
     () =>
       customers.map((customer) => ({
         id: customer.id,
+        customerId: customer.id,
         name: customer.name,
+        customerCode: customer.taxNumber,
+        email: customer.email,
         phone: customer.phone,
       })),
     [customers],

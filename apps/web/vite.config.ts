@@ -9,9 +9,20 @@ export default defineConfig({
     tailwindcss(),
   ],
   resolve: {
-    alias: {
-      core: fileURLToPath(new URL("./src/core/index.ts", import.meta.url)),
-    },
+    alias: [
+      {
+        find: /^core$/,
+        replacement: fileURLToPath(new URL("./src/core/index.ts", import.meta.url)),
+      },
+      {
+        find: /^integrations$/,
+        replacement: fileURLToPath(new URL("./src/integrations/index.ts", import.meta.url)),
+      },
+      {
+        find: /^integrations\/(.*)$/,
+        replacement: fileURLToPath(new URL("./src/integrations/$1", import.meta.url)),
+      },
+    ],
   },
   build: {
     emptyOutDir: true,

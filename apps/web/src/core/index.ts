@@ -22,3 +22,6 @@ export * from "./constants/status";
 
 /* Cross-module references */
 export * from "./types/references.types";
+
+/* Shared event types */
+export * from "./types/events.types";

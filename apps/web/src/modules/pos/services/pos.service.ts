@@ -1,4 +1,4 @@
-/**
+﻿/**
  * POS transaction service.
  *
  * Bridge between the POS checkout interface and existing ERP modules.
@@ -20,10 +20,14 @@ import {
 } from "../../payments/services/payment.service";
 
 import {
+  createSalesOrder,
   createDelivery,
   createDeliveryWithStockMovements,
-  createSalesOrder,
 } from "../../sales/services/sales.service";
+
+import {
+  mapPOSTransactionToSales,
+} from "integrations/sales";
 
 import type {
   CreatePaymentInput,
@@ -34,25 +38,26 @@ import type {
   CreateDeliveryInput,
   CreateSalesOrderInput,
   Delivery,
-  DeliveryItem,
   SalesOrder,
   SalesOrderItem,
 } from "../../sales/types/sales.types";
 
-import type { Cart, POSCustomer } from "../types/pos.types";
+import type { Cart, POSTransactionInput, POSCustomer } from "../types/pos.types";
 import type {
   POSPayment,
-  POSTransaction,
-  POSTransactionItem,
   StockMovementStatus,
 } from "../types/transaction.types";
+export interface POSTransactionResult {
+  transaction: POSTransactionInput;
+  salesOrder: SalesOrder;
+  payments: Payment[];
+  deliveryId: string;
+  stockMovementStatus: StockMovementStatus;
+  warning?: string;
+  shiftId?: string;
+}
 
 const DEFAULT_UNIT_ID = "default";
-
-function generateOrderNumber(): string {
-  const d = new Date();
-  return `POS-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${Date.now()}`;
-}
 
 /* ---------------------------------------------------------------- */
 /* Cart → POSTransaction                                            */
@@ -65,8 +70,8 @@ export function cartToTransaction(
   customer: POSCustomer | null,
   warehouseId: string,
   shiftId?: string,
-): POSTransaction {
-  const items: POSTransactionItem[] = cart.items.map((item) => ({
+): POSTransactionInput {
+  const items = cart.items.map((item) => ({
     productId: item.productId,
     quantity: item.quantity,
     price: item.unitPrice,
@@ -76,14 +81,19 @@ export function cartToTransaction(
   }));
 
   return {
-    customerId: customer?.id ?? "",
+    customer: customer ?? { id: "", customerId: "", name: "Walk-in Customer" },
     warehouseId,
-    items,
+    items: items.map((item) => ({
+      product: { productId: item.productId, name: "", sellingPrice: item.price },
+      quantity: item.quantity,
+      price: item.price,
+      discount: item.discount,
+      tax: item.tax,
+    })),
     subtotal: cart.subtotal,
     discount: cart.discount,
     tax: cart.tax,
     total: cart.total,
-    paymentStatus: "paid",
     shiftId,
   };
 }
@@ -111,30 +121,22 @@ export function validatePOSTransaction(
   if (!customer) {
     return {
       valid: false,
-      error: "A customer (or walk-in) must be selected.",
+      error: "A customer is required to complete the sale.",
     };
   }
 
   if (!warehouseId) {
     return {
       valid: false,
-      error: "A warehouse must be selected to fulfil the sale.",
+      error: "Select a fulfilment warehouse.",
     };
   }
 
-  if (payments.length === 0) {
-    return { valid: false, error: "No payment entered." };
-  }
-
-  const totalTendered = payments.reduce(
-    (sum, payment) => sum + payment.amount,
-    0,
-  );
-
-  if (totalTendered < cart.total - 0.001) {
+  const totalTendered = payments.reduce((sum, p) => sum + p.amount, 0);
+  if (totalTendered < cart.total - 0.005) {
     return {
       valid: false,
-      error: `Amount tendered (${totalTendered}) is less than the total (${cart.total}).`,
+      error: `Tendered ${totalTendered.toFixed(2)} < total ${cart.total.toFixed(2)}.`,
     };
   }
 
@@ -148,31 +150,30 @@ export function validatePOSTransaction(
 /** Build the Sales order input from the POS transaction. Delegates ownership of
  * the sale to the Sales module. */
 function toSalesOrderInput(
-  transaction: POSTransaction,
+  transaction: POSTransactionInput,
 ): CreateSalesOrderInput {
-  const items: SalesOrderItem[] = transaction.items.map(
-    (item, index) => ({
-      id: `pos-item-${index + 1}`,
-      productId: item.productId,
-      unitId: DEFAULT_UNIT_ID,
-      quantity: item.quantity,
-      sellingPrice: item.price,
-      tax: item.tax,
-      discount: item.discount,
-      total: item.subtotal,
-    }),
-  );
+  // Use the integration layer mapping
+  const salesInput = mapPOSTransactionToSales(transaction);
 
   return {
-    customerId: transaction.customerId,
-    orderNumber: generateOrderNumber(),
+    customerId: salesInput.customerId,
+    orderNumber: `POS-${Date.now()}`,
     date: new Date().toISOString().split("T")[0],
-    status: "confirmed",
-    items,
-    subtotal: transaction.subtotal,
-    tax: transaction.tax,
-    discount: transaction.discount,
-    total: transaction.total,
+    status: "confirmed" as const,
+    items: salesInput.items.map((item: typeof salesInput.items[0]) => ({
+      id: `pos-item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      productId: item.productId,
+      quantity: item.quantity,
+      unitId: item.unitId ?? DEFAULT_UNIT_ID,
+      sellingPrice: item.unitPrice,
+      tax: item.tax,
+      discount: item.discount,
+      total: item.unitPrice * item.quantity - item.discount + item.tax,
+    })),
+    subtotal: salesInput.items.reduce((sum: number, item: typeof salesInput.items[0]) => sum + item.unitPrice * item.quantity, 0),
+    tax: salesInput.items.reduce((sum: number, item: typeof salesInput.items[0]) => sum + item.tax, 0),
+    discount: salesInput.items.reduce((sum: number, item: typeof salesInput.items[0]) => sum + item.discount, 0),
+    total: salesInput.items.reduce((sum: number, item: typeof salesInput.items[0]) => sum + item.unitPrice * item.quantity - item.discount + item.tax, 0),
   };
 }
 
@@ -187,11 +188,11 @@ function toPaymentInput(
     partyId: customerId,
     amount: payment.amount,
     method: payment.method,
-    date: new Date().toISOString().split("T")[0],
     reference: payment.reference ?? "",
+    date: new Date().toISOString().split("T")[0],
     note: `POS payment (${payment.method})`,
     status: "completed",
-  } satisfies CreatePaymentInput;
+  };
 }
 
 /** Build the Delivery input from the POS transaction. Full delivery: every
@@ -199,65 +200,31 @@ function toPaymentInput(
  * ownership of fulfilment to the Sales delivery flow (which then drives the
  * stock movement). */
 function toDeliveryInput(
-  transaction: POSTransaction,
+  transaction: POSTransactionInput,
   salesOrderId: string,
   salesOrderItems: SalesOrderItem[],
 ): CreateDeliveryInput {
-  const items: DeliveryItem[] = transaction.items.map((item, index) => {
-    const soItem = salesOrderItems[index];
-
-    return {
-      id: `pos-delivery-item-${index + 1}`,
-      productId: item.productId,
-      productName: soItem?.productId ?? item.productId,
-      unitId: soItem?.unitId ?? DEFAULT_UNIT_ID,
-      orderedQuantity: item.quantity,
-      deliveredQuantity: item.quantity,
-      baseQuantity: item.quantity,
-    };
-  });
-
   return {
     salesOrderId,
     warehouseId: transaction.warehouseId,
-    date: new Date().toISOString().split("T")[0],
-    items,
-    status: "delivered",
+    date: new Date().toISOString(),
+    items: salesOrderItems.map((soItem, index) => {
+      const txItem = transaction.items.find((i) => i.product.productId === soItem.productId);
+      return {
+        id: `pos-delivery-item-${index + 1}`,
+        productId: soItem.productId,
+        productName: soItem.productId,
+        unitId: soItem.unitId,
+        orderedQuantity: txItem?.quantity ?? soItem.quantity,
+        deliveredQuantity: txItem?.quantity ?? soItem.quantity,
+        baseQuantity: txItem?.quantity ?? soItem.quantity,
+      };
+    }),
+    status: "delivered" as const,
   };
 }
 
-/* ---------------------------------------------------------------- */
-/* Transaction creation                                             */
-/* ---------------------------------------------------------------- */
-
-export interface POSTransactionResult {
-  transaction: POSTransaction;
-  salesOrder: SalesOrder;
-  payments: Payment[];
-  /** Id of the Sales delivery created for this POS sale (empty if the
-   * delivery/stock step failed). */
-  deliveryId: string;
-  /** Status of the downstream inventory (stock-out) flow. */
-  stockMovementStatus: StockMovementStatus;
-  /** Non-fatal warning (e.g. delivery/stock failed after a successful sale).
-   * When set, the recorded sale + payment remain the source of truth and the
-   * warehouse fulfilment must be completed manually. */
-  warning?: string;
-
-  /** Id of the cashier shift this sale was recorded against (POS register
-   * metadata only). */
-  shiftId?: string;
-}
-
-/**
- * Create a real POS sale via the existing modules.
- *
- * Flow:
- *   1. Validate cart + customer + warehouse + tenders.
- *   2. Create the Sales order (source of truth for the sale).
- *   3. Post each payment through `createPaymentWithJournal` — the existing
- *      Payment service, which automatically triggers the accounting journal.
- *   4. Create a Sales delivery for the order.
+/*\n *   4. Create a Sales delivery for the order.
  *   5. Drive the stock-out via `createDeliveryWithStockMovements` — the
  *      existing Sales → Delivery → Stock Movement flow. Inventory is reduced
  *      only through this movement; POS never mutates inventory directly.
@@ -300,7 +267,7 @@ export async function createPOSTransaction(
 
   for (const payment of payments) {
     const response = await createPaymentWithJournal(
-      toPaymentInput(payment, safeCustomer.id),
+      toPaymentInput(payment, safeCustomer.customerId),
     );
 
     createdPayments.push(response.data);
@@ -346,3 +313,5 @@ export async function createPOSTransaction(
     shiftId,
   };
 }
+
+

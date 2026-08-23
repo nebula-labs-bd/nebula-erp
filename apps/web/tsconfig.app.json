@@ -24,7 +24,9 @@
 
     /* Path aliases */
     "paths": {
-      "core": ["./src/core/index.ts"]
+      "core": ["./src/core/index.ts"],
+      "integrations": ["./src/integrations/index.ts"],
+      "integrations/*": ["./src/integrations/*"]
     }
   },
   "include": ["src"]

@@ -8,6 +8,8 @@
  * cleanly onto the existing Sales flow without duplicating it.
  */
 
+import type { CustomerReference, ProductReference } from "integrations";
+
 /** A single line in the POS cart. */
 export interface CartItem {
   /** Stable client-side id for the cart line. */
@@ -56,14 +58,39 @@ export interface Cart {
 }
 
 /**
- * Minimal customer slice used by the POS workspace. Mapped from the existing
- * Sales `Customer` / Contacts `Contact` records so we reuse, not duplicate,
- * the customer source of truth.
+ * Minimal customer slice used by the POS workspace.
+ * Carries the resolved `id` (from the shared Contact/customer source of truth)
+ * and a denormalised `customerId` for downstream Sales allocation, plus the
+ * display fields the checkout UI needs. It references, never duplicates, the
+ * customer source of truth.
  */
 export interface POSCustomer {
   id: string;
-
+  customerId: string;
   name: string;
+  customerCode?: string;
+  email?: string;
+  phone?: string;
+}
 
-  phone: string;
+/**
+ * POS transaction input mapped from cart.
+ * Uses integration layer reference types for cross-module linking.
+ */
+export interface POSTransactionInput {
+  customer: CustomerReference;
+  warehouseId: string;
+  items: Array<{
+    product: ProductReference;
+    quantity: number;
+    price: number;
+    discount: number;
+    tax: number;
+    unitId?: string;
+  }>;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  shiftId?: string;
 }

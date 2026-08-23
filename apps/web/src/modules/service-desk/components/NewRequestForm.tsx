@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import { ChevronDown, UserRound } from "lucide-react";
 
-import { useCustomers } from "../../sales/hooks/useCustomer";
+import { searchCustomers, type CustomerSearchResult } from "integrations/customer";
 
 import {
   PRIORITY_LABELS,
@@ -47,28 +47,53 @@ const labelClass =
 /**
  * New service request form.
  *
- * IMPORTANT (Part 10): the customer selector reuses the existing Sales
- * `useCustomers` query — the single source of truth for contacts. The service
- * desk NEVER creates a duplicate customer; it only links by `customerId`. The
- * selected `Customer` is mapped to the `ServiceCustomerRef` shape. A future
- * business selector will follow the same pattern (no business duplication).
+ * IMPORTANT (Part 10): the customer selector uses the integration layer
+ * `searchCustomers` — the single source of truth for contacts. The service
+ * desk NEVER creates a duplicate customer; it only links by `customerId`.
  */
 export default function NewRequestForm({
   onSubmit,
   onCancel,
 }: NewRequestFormProps) {
-  const { data: customers = [], isLoading } = useCustomers();
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<ServicePriority>("medium");
   const [status, setStatus] = useState<ServiceRequestStatus>("new");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerOpen, setCustomerOpen] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<CustomerSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search customers via integration layer
+  const handleCustomerSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const results = await searchCustomers(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error("Failed to search customers:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounced search
+  useMemo(() => {
+    const timeout = setTimeout(() => {
+      handleCustomerSearch(customerSearch);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [customerSearch]);
 
   const selectedCustomer = useMemo(
-    () => customers.find((customer) => customer.id === customerId) ?? null,
-    [customers, customerId],
+    () => searchResults.find((c) => c.id === customerId) ?? null,
+    [searchResults, customerId],
   );
 
   const canSubmit = title.trim() !== "" && customerId !== null;
@@ -114,6 +139,8 @@ export default function NewRequestForm({
     setPriority("medium");
     setStatus("new");
     setCustomerId(null);
+    setCustomerSearch("");
+    setSearchResults([]);
   }
 
   return (
@@ -157,16 +184,16 @@ export default function NewRequestForm({
 
           {customerOpen && (
             <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-[var(--nebula-border)] bg-[var(--nebula-surface)] shadow-[var(--nebula-shadow-md)]">
-              {isLoading ? (
+              {isSearching ? (
                 <div className="px-3 py-2 text-sm text-[var(--nebula-text-muted)]">
                   Loading customers…
                 </div>
-              ) : customers.length === 0 ? (
+              ) : searchResults.length === 0 ? (
                 <div className="px-3 py-2 text-sm text-[var(--nebula-text-muted)]">
                   No customers found.
                 </div>
               ) : (
-                customers.map((customer) => (
+                searchResults.map((customer) => (
                   <button
                     key={customer.id}
                     type="button"
