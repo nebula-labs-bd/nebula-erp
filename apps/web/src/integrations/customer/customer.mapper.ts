@@ -5,94 +5,91 @@
  * specific formats without duplicating the core entity.
  */
 
-import type { Contact, CustomerContact, VendorContact, BusinessContact } from "core";
-import type { CustomerReference } from "./customer.registry";
+import type { Contact, ContactRole } from "core";
 
-/** POS-specific customer shape (minimal for checkout). */
+import type { ContactReference } from "./customer.registry";
+
+/** POS-specific contact shape (minimal for checkout). */
 export interface POSCustomer {
   id: string;
   name: string;
-  customerCode?: string;
+  customerId: string;
   email?: string;
   phone?: string;
 }
 
-/** Sales-specific customer shape (extended for orders). */
+/** Sales-specific contact shape (extended for orders). */
 export interface SalesCustomer {
   id: string;
   name: string;
-  customerCode?: string;
+  roles: ContactRole[];
   email?: string;
   phone?: string;
   address?: string;
   companyName?: string;
   taxNumber?: string;
-  creditLimit?: number;
-  balance?: number;
 }
 
-/** Service Desk customer reference (lightweight). */
-export interface ServiceCustomerRef {
-  customerId: string;
+/** Service Desk contact reference (lightweight). */
+export interface ServiceContactRef {
+  contactId: string;
   name: string;
 }
 
-/** CRM customer shape (full). */
+/** CRM contact shape (full). */
 export interface CRMContact {
   id: string;
+  type: Contact["type"];
   name: string;
-  customerCode?: string;
+  roles: ContactRole[];
   email?: string;
   phone?: string;
   address?: string;
   companyName?: string;
   taxNumber?: string;
   notes?: string;
-  status: "active" | "inactive" | "archived";
+  status: Contact["status"];
   createdAt: string;
+  updatedAt: string;
 }
 
-/** Finance customer shape (for AR/AP). */
+/** Finance contact shape (for AR/AP). */
 export interface FinanceCustomer {
   id: string;
   name: string;
-  customerCode?: string;
-  balance: number;
-  creditLimit?: number;
-  status: "active" | "inactive" | "archived";
+  roles: ContactRole[];
+  status: Contact["status"];
 }
 
 /** Map core Contact to POS shape. */
-export function toPOSCustomer(contact: CustomerContact): POSCustomer {
+export function toPOSCustomer(contact: Contact): POSCustomer {
   return {
     id: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
+    customerId: contact.id,
     email: contact.email,
     phone: contact.phone,
   };
 }
 
 /** Map core Contact to Sales shape. */
-export function toSalesCustomer(contact: CustomerContact): SalesCustomer {
+export function toSalesCustomer(contact: Contact): SalesCustomer {
   return {
     id: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
+    roles: contact.roles,
     email: contact.email,
     phone: contact.phone,
     address: contact.address,
     companyName: contact.companyName,
     taxNumber: contact.taxNumber,
-    creditLimit: contact.creditLimit,
-    balance: contact.balance,
   };
 }
 
 /** Map core Contact to Service Desk reference. */
-export function toServiceCustomerRef(contact: CustomerContact): ServiceCustomerRef {
+export function toServiceContactRef(contact: Contact): ServiceContactRef {
   return {
-    customerId: contact.id,
+    contactId: contact.id,
     name: contact.name,
   };
 }
@@ -101,8 +98,9 @@ export function toServiceCustomerRef(contact: CustomerContact): ServiceCustomerR
 export function toCRMContact(contact: Contact): CRMContact {
   return {
     id: contact.id,
+    type: contact.type,
     name: contact.name,
-    customerCode: contact.type === "customer" ? contact.customerCode : undefined,
+    roles: contact.roles,
     email: contact.email,
     phone: contact.phone,
     address: contact.address,
@@ -111,41 +109,32 @@ export function toCRMContact(contact: Contact): CRMContact {
     notes: contact.notes,
     status: contact.status,
     createdAt: contact.createdAt,
+    updatedAt: contact.updatedAt,
   };
 }
 
 /** Map core Contact to Finance shape. */
-export function toFinanceCustomer(contact: CustomerContact): FinanceCustomer {
+export function toFinanceCustomer(contact: Contact): FinanceCustomer {
   return {
     id: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
-    balance: contact.balance ?? 0,
-    creditLimit: contact.creditLimit,
+    roles: contact.roles,
     status: contact.status,
   };
 }
 
-/** Generic mapper for any customer-like contact. */
-export function mapCustomerReference(contact: CustomerContact): CustomerReference {
+/** Generic mapper for any contact-like reference. */
+export function mapContactReference(contact: Contact): ContactReference {
   return {
-    customerId: contact.id,
+    contactId: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
   };
 }
 
-/** Check if a Contact is a customer. */
-export function isCustomer(contact: Contact): contact is CustomerContact {
-  return contact.type === "customer";
-}
-
-/** Check if a Contact is a vendor. */
-export function isVendor(contact: Contact): contact is VendorContact {
-  return contact.type === "vendor";
-}
-
-/** Check if a Contact is a business. */
-export function isBusiness(contact: Contact): contact is BusinessContact {
-  return contact.type === "business";
+/** Check if a Contact holds a given role. */
+export function hasContactRole(
+  contact: Contact,
+  role: ContactRole,
+): boolean {
+  return contact.roles.includes(role);
 }

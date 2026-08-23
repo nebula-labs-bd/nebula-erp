@@ -1,4 +1,4 @@
-import type { Contact } from "../types/contact.types";
+import type { Contact, ContactRole } from "../types/contact.types";
 
 type ContactTableProps = {
   contacts: Contact[];
@@ -18,8 +18,6 @@ function roleBadge(role: ContactRole): string {
     ? `${base} bg-blue-100 text-blue-700`
     : `${base} bg-purple-100 text-purple-700`;
 }
-
-type ContactRole = "customer" | "supplier";
 
 export default function ContactTable({
   contacts,

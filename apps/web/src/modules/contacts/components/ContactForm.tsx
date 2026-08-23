@@ -9,6 +9,7 @@ import type {
 } from "../types/contact.types";
 
 const initialForm: CreateContactInput = {
+  type: "individual",
   name: "",
   companyName: "",
   phone: "",
@@ -152,10 +153,10 @@ export default function ContactForm({ onClose }: ContactFormProps) {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={form.roles.includes("supplier")}
-                onChange={() => toggleRole("supplier")}
+                checked={form.roles.includes("vendor")}
+                onChange={() => toggleRole("vendor")}
               />
-              <span>Supplier</span>
+              <span>Vendor</span>
             </label>
           </div>
         </fieldset>

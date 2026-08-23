@@ -17,8 +17,8 @@ type ServiceRequestCardProps = {
  * Compact list row for a single service request.
  *
  * Uses the shared status/priority chips (token-driven colors) and the
- * customer reference resolved from the existing CRM/Sales source of truth —
- * the service desk never stores its own copy of the customer.
+ * requester reference resolved from the unified Contact Registry — the service
+ * desk never stores its own copy of the contact.
  */
 export default function ServiceRequestCard({
   request,
@@ -50,7 +50,7 @@ export default function ServiceRequestCard({
         </p>
 
         <p className="mt-0.5 truncate text-xs text-[var(--nebula-text-secondary)]">
-          {request.customer?.name ?? "Unassigned customer"}
+          {request.requester?.name ?? "Unassigned contact"}
           {" · "}
           {request.assignedEmployee?.name ?? "Unassigned"}
         </p>

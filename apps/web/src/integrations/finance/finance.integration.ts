@@ -7,7 +7,7 @@
  */
 
 import { apiClient } from "../../api/client";
-import type { CustomerReference } from "../customer/customer.registry";
+import type { ContactReference } from "../customer/customer.registry";
 import type { ProductReference } from "../product/product.registry";
 
 /** Payment method types. */
@@ -58,7 +58,7 @@ export interface JournalEntryReference {
 export function createPaymentReference(
   paymentId: string,
   paymentNumber: string,
-  customer: CustomerReference,
+  customer: ContactReference,
   amount: number,
   method: PaymentMethod,
   status: PaymentReference["status"],
@@ -69,7 +69,7 @@ export function createPaymentReference(
   return {
     paymentId,
     paymentNumber,
-    customerId: customer.customerId,
+    customerId: customer.contactId,
     customerName: customer.name,
     amount,
     method,
@@ -88,7 +88,7 @@ export function createDocumentFinanceReference(
   documentId: string,
   documentNumber: string,
   documentType: DocumentFinanceReference["documentType"],
-  customer: CustomerReference,
+  customer: ContactReference,
   total: number,
   status: DocumentFinanceReference["status"],
   date: string,
@@ -98,7 +98,7 @@ export function createDocumentFinanceReference(
     documentId,
     documentNumber,
     documentType,
-    customerId: customer.customerId,
+    customerId: customer.contactId,
     customerName: customer.name,
     total,
     status,

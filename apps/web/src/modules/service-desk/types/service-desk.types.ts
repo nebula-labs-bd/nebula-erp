@@ -47,29 +47,6 @@ export interface ServiceTimelineEvent {
 }
 
 /**
- * Reference to an existing CRM / contact record.
- *
- * Integration point (Part 10): the service desk MUST NOT create duplicate
- * customers. A request links to the same customer identity used across CRM,
- * sales and invoicing. Future: surface sales history, service history and
- * outstanding invoices alongside the request.
- */
-export interface ServiceCustomerRef {
-  id: string;
-  name: string;
-  company?: string;
-}
-
-/**
- * Reference to an existing business entity (a company the customer belongs to).
- * Reuses the CRM business identity rather than duplicating it.
- */
-export interface ServiceBusinessRef {
-  id: string;
-  name: string;
-}
-
-/**
  * Reference to the assigned employee (technician/agent). Resolves against the
  * shared Employee registry from `core` — the service desk must NOT keep its
  * own copy of staff. Display-only fields are denormalised for convenience.
@@ -78,6 +55,17 @@ export interface ServiceEmployeeRef {
   id: string;
   name: string;
   specialty?: string;
+}
+
+/**
+ * Lightweight reference to a contact from the shared Contact registry.
+ * The service desk NEVER duplicates contact data — it links by id and keeps
+ * only a denormalised display name for convenience.
+ */
+export interface ServiceContactRef {
+  id: string;
+  name: string;
+  company?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -92,13 +80,20 @@ export interface ServiceRequest {
   status: ServiceRequestStatus;
   priority: ServicePriority;
 
-  /** Existing CRM contact id (no duplication). */
-  customerId?: string;
-  customer?: ServiceCustomerRef;
+  /**
+   * Existing contact id from the shared Contact registry (no duplication).
+   * The person or organization that raised the request.
+   */
+  requesterContactId?: string;
+  requester?: ServiceContactRef;
 
-  /** Existing business id (no duplication). */
-  businessId?: string;
-  business?: ServiceBusinessRef;
+  /**
+   * Existing contact id from the shared Contact registry used for billing
+   * (may differ from the requester, e.g. an organization billed for an
+   * individual's service).
+   */
+  billingContactId?: string;
+  billing?: ServiceContactRef;
 
   /**
    * Id of the assigned employee in the shared `core` Employee registry.

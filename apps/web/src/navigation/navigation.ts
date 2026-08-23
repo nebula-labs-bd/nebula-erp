@@ -204,22 +204,7 @@ export const navigationConfig: NavigationItem[] = [
         permission: permissions.SERVICE_DESK_VIEW,
         type: "link",
       },
-      {
-        id: "service-customers",
-        name: "Customers",
-        icon: "Users",
-        path: "/service-customers",
-        permission: permissions.SERVICE_DESK_VIEW,
-        type: "link",
-      },
-      {
-        id: "service-businesses",
-        name: "Businesses",
-        icon: "Building2",
-        path: "/service-businesses",
-        permission: permissions.SERVICE_DESK_VIEW,
-        type: "link",
-      },
+      /* Service Desk "Customers"/"Businesses" removed — managed in the unified Contact Registry (/contacts). */
       {
         id: "service-technicians",
         name: "Technicians",

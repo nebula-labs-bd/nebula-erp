@@ -1,19 +1,13 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { ChevronDown, UserRound } from "lucide-react";
-
-import { searchCustomers, type CustomerSearchResult } from "integrations/customer";
-
-import {
-  PRIORITY_LABELS,
-  STATUS_LABELS,
-} from "../utils/service-desk.utils";
-
+import { PRIORITY_LABELS, STATUS_LABELS } from "../utils/service-desk.utils";
 import type {
   ServicePriority,
   ServiceRequest,
   ServiceRequestStatus,
 } from "../types/service-desk.types";
+import ContactSelector from "../../contacts/components/ContactSelector";
+import type { ContactSearchResult } from "integrations/customer";
 
 type NewRequestFormProps = {
   /** Called with a fully-formed request (foundation: local state, no API). */
@@ -47,9 +41,9 @@ const labelClass =
 /**
  * New service request form.
  *
- * IMPORTANT (Part 10): the customer selector uses the integration layer
- * `searchCustomers` — the single source of truth for contacts. The service
- * desk NEVER creates a duplicate customer; it only links by `customerId`.
+ * The requester & billing pickers use the shared `ContactSelector` backed by
+ * the global Contact Registry (`searchContacts`). The service desk NEVER
+ * creates a duplicate contact — it only links by id.
  */
 export default function NewRequestForm({
   onSubmit,
@@ -59,49 +53,16 @@ export default function NewRequestForm({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<ServicePriority>("medium");
   const [status, setStatus] = useState<ServiceRequestStatus>("new");
-  const [customerId, setCustomerId] = useState<string | null>(null);
-  const [customerOpen, setCustomerOpen] = useState(false);
-  const [customerSearch, setCustomerSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<CustomerSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [requesterId, setRequesterId] = useState<string | null>(null);
+  const [requester, setRequester] = useState<ContactSearchResult | null>(null);
+  const [billingId, setBillingId] = useState<string | null>(null);
 
-  // Search customers via integration layer
-  const handleCustomerSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const results = await searchCustomers(query);
-      setSearchResults(results);
-    } catch (error) {
-      console.error("Failed to search customers:", error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Debounced search
-  useMemo(() => {
-    const timeout = setTimeout(() => {
-      handleCustomerSearch(customerSearch);
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [customerSearch]);
-
-  const selectedCustomer = useMemo(
-    () => searchResults.find((c) => c.id === customerId) ?? null,
-    [searchResults, customerId],
-  );
-
-  const canSubmit = title.trim() !== "" && customerId !== null;
+  const canSubmit = title.trim() !== "" && requesterId !== null;
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    if (!canSubmit || !selectedCustomer) {
+    if (!canSubmit) {
       return;
     }
 
@@ -114,11 +75,11 @@ export default function NewRequestForm({
       description: description.trim(),
       status,
       priority,
-      customerId: selectedCustomer.id,
-      customer: {
-        id: selectedCustomer.id,
-        name: selectedCustomer.name,
-      },
+      requesterContactId: requesterId ?? undefined,
+      requester: requester
+        ? { id: requester.id, name: requester.name }
+        : undefined,
+      billingContactId: billingId ?? undefined,
       createdDate: now,
       attachments: [],
       notes: [],
@@ -127,7 +88,7 @@ export default function NewRequestForm({
           id: `tl-${Date.now()}`,
           label: "Request created",
           timestamp: now,
-          actor: selectedCustomer.name,
+          actor: requester?.name ?? "Unassigned",
         },
       ],
     };
@@ -138,9 +99,9 @@ export default function NewRequestForm({
     setDescription("");
     setPriority("medium");
     setStatus("new");
-    setCustomerId(null);
-    setCustomerSearch("");
-    setSearchResults([]);
+    setRequesterId(null);
+    setRequester(null);
+    setBillingId(null);
   }
 
   return (
@@ -152,72 +113,23 @@ export default function NewRequestForm({
         New Service Request
       </h2>
 
-      {/* Customer — reuses Sales customers (no duplication) */}
-      <div>
-        <label className={labelClass}>Customer</label>
+      {/* Requester + Billing — shared Contact Registry (no duplication) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ContactSelector
+          label="Requester *"
+          value={requesterId}
+          filterRoles={["customer", "partner"]}
+          onChange={(id, result) => {
+            setRequesterId(id);
+            setRequester(result ?? null);
+          }}
+        />
 
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setCustomerOpen((prev) => !prev)}
-            className={`${inputClass} flex items-center justify-between text-left`}
-          >
-            <span className="flex items-center gap-2">
-              <UserRound
-                size={16}
-                className="text-[var(--nebula-text-secondary)]"
-              />
-
-              {selectedCustomer ? (
-                <span className="font-medium">
-                  {selectedCustomer.name}
-                </span>
-              ) : (
-                <span className="text-[var(--nebula-text-muted)]">
-                  Select an existing customer…
-                </span>
-              )}
-            </span>
-
-            <ChevronDown size={16} className="text-[var(--nebula-text-muted)]" />
-          </button>
-
-          {customerOpen && (
-            <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-[var(--nebula-border)] bg-[var(--nebula-surface)] shadow-[var(--nebula-shadow-md)]">
-              {isSearching ? (
-                <div className="px-3 py-2 text-sm text-[var(--nebula-text-muted)]">
-                  Loading customers…
-                </div>
-              ) : searchResults.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-[var(--nebula-text-muted)]">
-                  No customers found.
-                </div>
-              ) : (
-                searchResults.map((customer) => (
-                  <button
-                    key={customer.id}
-                    type="button"
-                    onClick={() => {
-                      setCustomerId(customer.id);
-                      setCustomerOpen(false);
-                    }}
-                    className="block w-full px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--nebula-surface-muted)]"
-                  >
-                    <span className="font-medium text-[var(--nebula-text-primary)]">
-                      {customer.name}
-                    </span>
-
-                    {customer.phone && (
-                      <span className="ml-2 text-[var(--nebula-text-muted)]">
-                        {customer.phone}
-                      </span>
-                    )}
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
+        <ContactSelector
+          label="Billing contact"
+          value={billingId}
+          onChange={(id) => setBillingId(id)}
+        />
       </div>
 
       {/* Title */}

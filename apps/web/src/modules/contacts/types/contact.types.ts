@@ -1,29 +1,38 @@
-export type ContactRole = "customer" | "supplier";
+import type {
+  Contact,
+  ContactRole,
+  ContactType,
+  ContactRelationshipLink,
+} from "core";
 
+/**
+ * The shared Contact registry is the single source of truth for every party
+ * (customers, vendors, partners, organizations…). Re-export the core shape so
+ * consumers can import from the contacts module without reaching into `core`
+ * directly.
+ */
+export type {
+  Contact,
+  ContactRole,
+  ContactType,
+  ContactRelationshipLink,
+};
+
+/** Contacts module status — a focused subset of `RecordStatus` from core. */
 export type ContactStatus = "active" | "inactive";
 
-export interface Contact {
-  id: string;
-  name: string;
-  companyName?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  taxNumber?: string;
-  roles: ContactRole[];
-  status: ContactStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
+/** Payload for creating a contact through the contacts service. */
 export interface CreateContactInput {
+  type: ContactType;
   name: string;
+  roles: ContactRole[];
+  relationships?: ContactRelationshipLink[];
   companyName?: string;
   phone?: string;
   email?: string;
   address?: string;
   taxNumber?: string;
-  roles: ContactRole[];
+  notes?: string;
   status: ContactStatus;
 }
 

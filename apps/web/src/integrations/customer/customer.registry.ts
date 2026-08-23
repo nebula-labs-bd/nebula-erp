@@ -7,87 +7,86 @@
  */
 
 import { apiClient } from "../../api/client";
-import type { Contact, CustomerContact } from "core";
+import type { Contact, ContactRole } from "core";
 
-/** Lightweight search result shape for selectors. */
-export interface CustomerSearchResult {
+/**
+ * Lightweight search result shape for contact selectors. `type`/`roles`
+ * let callers filter (e.g. a request requester vs. a billing party) without
+ * loading the full contact record.
+ */
+export interface ContactSearchResult {
   id: string;
+  type: Contact["type"];
   name: string;
-  customerCode?: string;
+  roles: ContactRole[];
+  companyName?: string;
   email?: string;
   phone?: string;
-  type: "customer" | "vendor" | "business";
 }
 
 /**
- * Fetch a single customer by ID.
- * Returns the core Contact entity (customer variant).
+ * Fetch a single contact by ID from the shared Contact registry.
+ * Returns the unified core Contact entity.
  */
-export async function getCustomer(id: string): Promise<CustomerContact | null> {
+export async function getContact(id: string): Promise<Contact | null> {
   const response = await apiClient.get<Contact>(`/contacts/${id}`);
-
-  if (!response.data || response.data.type !== "customer") {
-    return null;
-  }
-
-  return response.data as CustomerContact;
+  return response.data ?? null;
 }
 
 /**
- * Search customers by query string.
- * Returns lightweight results for dropdowns/selectors.
+ * Search contacts by query string.
+ * Returns lightweight results for dropdowns / selectors. No module-specific
+ * duplication — every consumer resolves the same shared contact.
  */
-export async function searchCustomers(query: string): Promise<CustomerSearchResult[]> {
+export async function searchContacts(query: string): Promise<ContactSearchResult[]> {
   const response = await apiClient.get<Contact[]>(
-    `/contacts?type=customer&q=${encodeURIComponent(query)}`
+    `/contacts?q=${encodeURIComponent(query)}`
   );
 
-  return (response.data ?? []).map((contact): CustomerSearchResult => ({
+  return (response.data ?? []).map((contact): ContactSearchResult => ({
     id: contact.id,
+    type: contact.type,
     name: contact.name,
-    customerCode: contact.type === "customer" ? contact.customerCode : undefined,
+    roles: contact.roles,
+    companyName: contact.companyName,
     email: contact.email,
     phone: contact.phone,
-    type: contact.type,
   }));
 }
 
 /**
- * Create a lightweight customer reference for cross-module linking.
- * Used by POS, Sales, Service Desk to reference a customer without embedding full data.
+ * Create a lightweight contact reference for cross-module linking.
+ * Used by POS, Sales, Service Desk to reference a contact without embedding
+ * the full record.
  */
-export interface CustomerReference {
-  customerId: string;
+export interface ContactReference {
+  contactId: string;
   name: string;
-  customerCode?: string;
 }
 
-export function createCustomerReference(contact: CustomerContact): CustomerReference {
+export function createContactReference(contact: Contact): ContactReference {
   return {
-    customerId: contact.id,
+    contactId: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
   };
 }
 
 /**
- * Map a core Contact to a module-specific shape.
+ * Map a core Contact to a generic module shape.
  * Modules can extend this for their specific needs.
  */
-export interface ModuleCustomer {
+export interface ModuleContact {
   id: string;
   name: string;
-  customerCode?: string;
   email?: string;
   phone?: string;
-  status: "active" | "inactive" | "archived";
+  status: Contact["status"];
 }
 
-export function mapCustomerToModule(contact: CustomerContact): ModuleCustomer {
+export function mapContactToModule(contact: Contact): ModuleContact {
   return {
     id: contact.id,
     name: contact.name,
-    customerCode: contact.customerCode,
     email: contact.email,
     phone: contact.phone,
     status: contact.status,

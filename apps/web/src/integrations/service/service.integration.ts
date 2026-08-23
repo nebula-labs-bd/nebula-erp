@@ -10,7 +10,7 @@
 
 import { apiClient } from "../../api/client";
 import type { ProductReference } from "../product/product.registry";
-import type { CustomerReference } from "../customer/customer.registry";
+import type { ContactReference } from "../customer/customer.registry";
 import type { StockAvailability } from "../inventory/inventory.integration";
 
 /** Lightweight service request reference for cross-module linking. */
@@ -48,23 +48,23 @@ export interface ServiceDocumentReference {
 }
 
 /**
- * Create a service customer reference from a core Contact.
- * Used by Service Desk to link a service request to a customer.
+ * Create a service contact reference from the shared Contact registry.
+ * Used by Service Desk to link a service request to a contact.
  */
-export interface ServiceCustomerReference {
-  customerId: string;
+export interface ServiceContactReference {
+  contactId: string;
   name: string;
   email?: string;
   phone?: string;
   address?: string;
 }
 
-export function createServiceCustomerReference(
-  customer: CustomerReference
-): ServiceCustomerReference {
+export function createServiceContactReference(
+  contact: ContactReference
+): ServiceContactReference {
   return {
-    customerId: customer.customerId,
-    name: customer.name,
+    contactId: contact.contactId,
+    name: contact.name,
   };
 }
 
@@ -163,7 +163,7 @@ export async function getServiceRequestReference(
  */
 export interface ServiceFlowContext {
   serviceRequest: ServiceRequestReference;
-  customer: ServiceCustomerReference;
+  contact: ServiceContactReference;
   parts: Array<{
     product: ProductReference;
     quantity: number;
@@ -180,12 +180,12 @@ export async function buildServiceFlowContext(
   if (!serviceRequest) return null;
 
   // In a real implementation, this would fetch the service request details
-  // including associated parts and customer
+  // including associated parts and contact
   // For now, we return the minimal context structure
   return {
     serviceRequest,
-    customer: {
-      customerId: serviceRequest.customerId,
+    contact: {
+      contactId: serviceRequest.customerId,
       name: serviceRequest.customerName,
     },
     parts: [],

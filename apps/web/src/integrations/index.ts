@@ -42,9 +42,10 @@ export * from "./finance/finance.integration";
 /* Re-export core entities for convenience */
 export type {
   Contact,
-  CustomerContact,
-  VendorContact,
-  BusinessContact,
+  ContactType,
+  ContactRole,
+  ContactRelationshipType,
+  ContactRelationshipLink,
   Product,
   RecordStatus,
   DocumentStatus,

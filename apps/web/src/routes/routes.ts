@@ -18,8 +18,6 @@ import POSPage from "../modules/pos/pages/POSPage";
 import {
   ServiceDeskDashboardPage,
   ServiceDeskRequestsPage,
-  ServiceDeskCustomersPage,
-  ServiceDeskBusinessesPage,
   ServiceDeskTechniciansPage,
   ServiceDeskSchedulePage,
   ServiceDeskReportsPage,
@@ -97,14 +95,7 @@ export const routes = [
     path: "/service-requests",
     element: ServiceDeskRequestsPage,
   },
-  {
-    path: "/service-customers",
-    element: ServiceDeskCustomersPage,
-  },
-  {
-    path: "/service-businesses",
-    element: ServiceDeskBusinessesPage,
-  },
+  /* Service Desk "Customers" and "Businesses" pages removed — contacts live in the unified Contact Registry at /contacts. */
   {
     path: "/service-technicians",
     element: ServiceDeskTechniciansPage,

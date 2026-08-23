@@ -37,7 +37,7 @@ export default function ContactBalance({ contact }: ContactBalanceProps) {
           (p) =>
             p.partyId === contact.id &&
             (contact.roles.includes("customer") ||
-              contact.roles.includes("supplier")),
+              contact.roles.includes("vendor")),
         )
         .map((p) => p.id),
     [payments, contact.id, contact.roles],
@@ -63,7 +63,7 @@ export default function ContactBalance({ contact }: ContactBalanceProps) {
     }
 
     // Purchase invoices → payable
-    if (contact.roles.includes("supplier")) {
+    if (contact.roles.includes("vendor")) {
       for (const po of purchaseOrders) {
         if (
           po.supplierId === contact.id &&

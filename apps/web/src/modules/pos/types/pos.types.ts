@@ -8,7 +8,7 @@
  * cleanly onto the existing Sales flow without duplicating it.
  */
 
-import type { CustomerReference, ProductReference } from "integrations";
+import type { ProductReference } from "integrations";
 
 /** A single line in the POS cart. */
 export interface CartItem {
@@ -78,7 +78,7 @@ export interface POSCustomer {
  * Uses integration layer reference types for cross-module linking.
  */
 export interface POSTransactionInput {
-  customer: CustomerReference;
+  customer: POSCustomer;
   warehouseId: string;
   items: Array<{
     product: ProductReference;

@@ -81,7 +81,8 @@ export function cartToTransaction(
   }));
 
   return {
-    customer: customer ?? { id: "", customerId: "", name: "Walk-in Customer" },
+    customer:
+      customer ?? { id: "", customerId: "", name: "Walk-in Customer" },
     warehouseId,
     items: items.map((item) => ({
       product: { productId: item.productId, name: "", sellingPrice: item.price },

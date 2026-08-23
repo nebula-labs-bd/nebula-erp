@@ -41,7 +41,7 @@ const PRIORITY_OPTIONS: ServicePriority[] = [
  * Filterable list of service requests.
  *
  * Filters by free-text search, status and priority. Each row reuses the
- * customer reference already resolved from the CRM/Sales source of truth.
+ * requester reference already resolved from the unified Contact Registry.
  */
 export default function ServiceRequestList({
   requests,
@@ -70,7 +70,7 @@ export default function ServiceRequestList({
       return (
         request.ticketNumber.toLowerCase().includes(q) ||
         request.title.toLowerCase().includes(q) ||
-        (request.customer?.name ?? "").toLowerCase().includes(q)
+        (request.requester?.name ?? "").toLowerCase().includes(q)
       );
     });
   }, [requests, query, status, priority]);

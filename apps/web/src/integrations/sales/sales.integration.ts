@@ -10,7 +10,6 @@
 
 import { apiClient } from "../../api/client";
 import type { ProductReference } from "../product/product.registry";
-import type { CustomerReference } from "../customer/customer.registry";
 
 /** Sales document types. */
 export type SalesDocumentType = "order" | "invoice" | "credit-note" | "return";
@@ -50,7 +49,7 @@ export interface InvoiceReference {
 
 /** POS transaction mapped to sales order input. */
 export interface POSTransactionToSalesInput {
-  customer: CustomerReference;
+  customer: { customerId: string; name: string };
   warehouseId: string;
   items: Array<{
     product: ProductReference;

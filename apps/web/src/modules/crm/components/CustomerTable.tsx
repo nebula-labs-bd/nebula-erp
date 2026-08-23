@@ -1,15 +1,20 @@
-import type {
-  Customer,
-} from "../types/crm.types";
+import type { Contact, ContactRole } from "../../contacts/types/contact.types";
+
+const ROLE_LABELS: Record<ContactRole, string> = {
+  customer: "Customer",
+  vendor: "Vendor",
+  partner: "Partner",
+  other: "Other",
+};
 
 
 type CustomerTableProps = {
-  customers: Customer[];
+  contacts: Contact[];
 };
 
 
 export default function CustomerTable({
-  customers,
+  contacts,
 }: CustomerTableProps) {
   return (
     <div className="surface overflow-hidden">
@@ -17,7 +22,7 @@ export default function CustomerTable({
         <thead>
           <tr className="border-b">
             <th className="p-3 text-left">
-              Customer
+              Name
             </th>
 
             <th className="p-3 text-left">
@@ -29,31 +34,41 @@ export default function CustomerTable({
             </th>
 
             <th className="p-3 text-left">
+              Roles
+            </th>
+
+            <th className="p-3 text-left">
               Status
             </th>
           </tr>
         </thead>
 
         <tbody>
-          {customers.map((customer) => (
+          {contacts.map((contact) => (
             <tr
-              key={customer.id}
+              key={contact.id}
               className="border-b"
             >
-              <td className="p-3">
-                {customer.name}
+              <td className="p-3 font-medium">
+                {contact.name}
               </td>
 
               <td className="p-3">
-                {customer.company}
+                {contact.companyName ?? "-"}
               </td>
 
               <td className="p-3">
-                {customer.email}
+                {contact.email ?? "-"}
               </td>
 
               <td className="p-3">
-                {customer.status}
+                {contact.roles
+                  .map((role) => ROLE_LABELS[role] ?? role)
+                  .join(", ") || "-"}
+              </td>
+
+              <td className="p-3">
+                {contact.status}
               </td>
             </tr>
           ))}
